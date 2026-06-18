@@ -1,0 +1,33 @@
+# MkDocs build output (deployed to gh-pages branch by gh-deploy)
+site/site/
+
+# Reference material not for distribution
+*.pdf
+
+# CMake build directories
+build/
+*/build/
+**/build/
+
+# Compiled binaries
+*.o
+*.a
+*.so
+
+# CUDA intermediate files
+*.cubin
+*.fatbin
+*.ptx
+
+# Kokkos/MATAR install artifacts
+kokkos-install/
+matar-install/
+
+# LIKWID profiler output
+callgrind.out
+*.likwid
+
+# Editor and OS artifacts
+.vscode/settings.json
+*~
+.DS_Store

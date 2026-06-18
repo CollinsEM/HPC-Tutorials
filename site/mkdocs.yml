@@ -1,0 +1,74 @@
+site_name: Parallel Programming for HPC — A Practical Guide
+site_url: https://CollinsEM.github.io/HPC-Tutorials/
+site_description: >
+  A hands-on tutorial covering parallel programming models and best practices
+  for high-performance computing on workstations and SLURM clusters.
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - toc.integrate
+    - search.highlight
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.arithmatex:
+      generic: true
+  - tables
+  - toc:
+      permalink: true
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - Modules:
+    - "0: Parallel Computing Theory": modules/00-parallel-theory.md
+    - "1: Hardware & Data Layout": modules/01-hardware.md
+    - "2: Auto-vectorization": modules/02-autovec.md
+    - "3: OpenMP — CPU Parallelism": modules/03-openmp.md
+    - "4: CUDA — GPU Programming": modules/04-cuda.md
+    - "5: C++17 std::par": modules/05-stdpar.md
+  - Running Code:
+    - "On a Workstation": running/workstation.md
+    - "On a SLURM Cluster": running/slurm.md

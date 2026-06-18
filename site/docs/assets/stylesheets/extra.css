@@ -1,0 +1,17 @@
+/* Widen the solution admonition to make code more readable */
+.md-typeset .admonition.success,
+.md-typeset details.success {
+  border-color: #4caf50;
+}
+
+/* Keep code blocks from overflowing on narrow screens */
+.md-typeset pre code {
+  word-break: normal;
+  overflow-x: auto;
+}
+
+/* Emphasize TODO markers inside code blocks */
+.md-typeset code .c1,
+.md-typeset code .c {
+  font-style: italic;
+}
