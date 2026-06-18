@@ -48,8 +48,8 @@ lets you compare apples-to-apples as you move from serial code to OpenMP to CUDA
 ## Getting the code
 
 ```bash
-git clone <repository-url>
-cd CI-PIVOT/examples
+git clone https://github.com/CollinsEM/HPC-Tutorials.git
+cd HPC-Tutorials/examples
 ```
 
 Each subdirectory contains a self-contained example with a `README` or inline

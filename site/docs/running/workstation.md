@@ -28,8 +28,8 @@ If `nvidia-smi` fails, the NVIDIA driver is not installed. If `nvcc` is missing,
 ## Cloning the repository
 
 ```bash
-git clone <repository-url>
-cd CI-PIVOT
+git clone https://github.com/CollinsEM/HPC-Tutorials.git
+cd HPC-Tutorials
 ```
 
 All example paths below are relative to the repository root.
