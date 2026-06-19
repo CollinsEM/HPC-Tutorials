@@ -22,6 +22,7 @@ multi-core CPUs, and GPU accelerators.
 | [5](modules/05-stdpar.md) | C++17 `std::par` | GPU-accelerated standard algorithms |
 | [6](modules/06-omp-offload.md) | OpenMP Offload | GPU programming with `#pragma omp target` directives |
 | [7](modules/07-mpi.md) | MPI | Distributed-memory parallelism, message passing, collectives |
+| [8](modules/08-kokkos.md) | Kokkos & MATAR | Performance portability across CPU/GPU backends |
 
 ## How to use this tutorial
 
