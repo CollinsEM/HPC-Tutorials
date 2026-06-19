@@ -21,6 +21,7 @@ multi-core CPUs, and GPU accelerators.
 | [4](modules/04-cuda.md) | CUDA | GPU kernels, device memory, data transfers |
 | [5](modules/05-stdpar.md) | C++17 `std::par` | GPU-accelerated standard algorithms |
 | [6](modules/06-omp-offload.md) | OpenMP Offload | GPU programming with `#pragma omp target` directives |
+| [7](modules/07-mpi.md) | MPI | Distributed-memory parallelism, message passing, collectives |
 
 ## How to use this tutorial
 
@@ -37,7 +38,7 @@ Each coding module contains:
 
 ## Common benchmark: Stream Triad
 
-All coding modules use a single kernel as their benchmark:
+Most coding modules use a single kernel as their benchmark:
 
 $$A[i] = B[i] + \alpha \times C[i]$$
 
@@ -45,6 +46,8 @@ This *Stream Triad* operation is memory-bound, meaning its performance is limite
 by memory bandwidth rather than floating-point throughput — which is the common
 case for most HPC codes. Implementing it across multiple programming models
 lets you compare apples-to-apples as you move from serial code to OpenMP to CUDA.
+(The distributed-memory MPI module uses a matrix-vector multiply instead, since
+the triad has nothing to communicate.)
 
 ## Getting the code
 

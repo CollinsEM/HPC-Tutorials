@@ -70,6 +70,7 @@ nav:
     - "4: CUDA — GPU Programming": modules/04-cuda.md
     - "5: C++17 std::par": modules/05-stdpar.md
     - "6: OpenMP Offload": modules/06-omp-offload.md
+    - "7: MPI — Distributed Memory": modules/07-mpi.md
   - Running Code:
     - "On a Workstation": running/workstation.md
     - "On a SLURM Cluster": running/slurm.md
