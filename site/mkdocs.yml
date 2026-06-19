@@ -79,6 +79,7 @@ nav:
     - "6: OpenMP Offload": modules/06-omp-offload.md
     - "7: MPI — Distributed Memory": modules/07-mpi.md
     - "8: Kokkos & MATAR — Portability": modules/08-kokkos.md
+    - "9: Profiling & Performance Analysis": modules/09-profiling.md
   - Running Code:
     - "On a Workstation": running/workstation.md
     - "On a SLURM Cluster": running/slurm.md

@@ -23,6 +23,7 @@ multi-core CPUs, and GPU accelerators.
 | [6](modules/06-omp-offload.md) | OpenMP Offload | GPU programming with `#pragma omp target` directives |
 | [7](modules/07-mpi.md) | MPI | Distributed-memory parallelism, message passing, collectives |
 | [8](modules/08-kokkos.md) | Kokkos & MATAR | Performance portability across CPU/GPU backends |
+| [9](modules/09-profiling.md) | Profiling | LIKWID, Valgrind, and the roofline model |
 
 ## How to use this tutorial
 
