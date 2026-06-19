@@ -1,5 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=mpi-vecmat
+# TODO: Charge the job to your allocation/account (required on many clusters).
+# #SBATCH --account=<your_account>
 #SBATCH --nodes=1
 #SBATCH --ntasks=4
 #SBATCH --cpus-per-task=1
