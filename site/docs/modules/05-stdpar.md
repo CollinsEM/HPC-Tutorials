@@ -167,7 +167,7 @@ Compile with `-stdpar=gpu` and compare the reported time to the CUDA Example1 ke
 time. Note whether the comparison is fair (hint: consider what Unified Memory is doing
 on first access).
 
-???+ success "Show solution — timing and size changes"
+??? success "Show solution — timing and size changes"
     ```cpp
     #include <chrono>
 

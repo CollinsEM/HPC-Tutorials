@@ -225,7 +225,7 @@ After the second `cudaDeviceSynchronize()`:
 cudaMemcpy(c, c_d, stream_array_size*sizeof(double), cudaMemcpyDeviceToHost);
 ```
 
-???+ success "Show complete solution"
+??? success "Show complete solution"
     The complete solution is at `examples/CUDA/Example1/solutions/StreamTriad.cu`.
     Key additions relative to the starter code:
 

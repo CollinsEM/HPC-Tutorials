@@ -160,7 +160,7 @@ GPU offload requires both an OpenMP-capable compiler *and* an offload backend fo
 
 **Task 2 — Restore the triad.** Change the loop body to the full Stream Triad, `c[i] = a[i] + scalar*b[i]` with `scalar = 3.0`, and update the verification (the expected value becomes `1.0 + 3.0*2.0 = 7.0`). Confirm verification passes.
 
-???+ success "Show solution"
+??? success "Show solution"
     ```cpp
     void vector_add(double *c, double *a, double *b, int n) {
       const double scalar = 3.0;

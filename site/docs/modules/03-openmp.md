@@ -82,7 +82,7 @@ missing.
 **Assignment:** Wrap the body of `main` in `#pragma omp parallel { ... }`,
 set `OMP_NUM_THREADS=4`, and verify that all four threads print.
 
-???+ success "Show solution"
+??? success "Show solution"
     ```c
     #include <stdio.h>
     #include <omp.h>
@@ -151,7 +151,7 @@ on any other iteration. This is the ideal case for `#pragma omp parallel for`.
 **Assignment:** Add `#pragma omp parallel for` to the loop in `vector_add`.
 Print the thread count in `main`. Measure speedup over the serial version.
 
-???+ success "Show solution"
+??? success "Show solution"
     ```c
     #include <stdio.h>
     #include <omp.h>
@@ -343,7 +343,7 @@ int main() {
 4. Sweep the thread count from 1 to the number of physical cores on your
    machine and record the speedup for each function independently.
 
-???+ success "Show solution (mean computation)"
+??? success "Show solution (mean computation)"
     ```cpp
     void compute_mean(const std::vector<std::vector<double>>& data,
                       std::vector<double>& mean) {

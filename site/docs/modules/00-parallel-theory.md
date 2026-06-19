@@ -294,7 +294,7 @@ modules in this tutorial include a Kokkos example to demonstrate the tradeoff.
    GPU acceleration, and two properties that would make it a poor candidate. Be
    specific about which GPU-fit criteria from this module apply.
 
-???+ "Show solutions"
+??? "Show solutions"
     **Question 1**: With $S = 0.05$, the maximum speedup is $1/0.05 = 20\times$.
     To reach 90% of that limit ($18\times$), solve $18 = 1/(0.05 + 0.95/N)$, giving
     $N = 0.95/(1/18 - 0.05) \approx 171$ processors. Beyond that, adding hardware

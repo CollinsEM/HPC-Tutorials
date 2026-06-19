@@ -367,7 +367,7 @@ your achieved bandwidth is 10–20% of peak, your access pattern is the bottlene
 3. The SoA layout stores field arrays contiguously. How does this interact with
    SIMD auto-vectorization? What would an AoS layout require instead?
 
-???+ "Show solutions"
+??? "Show solutions"
     **Question 1**: Each struct is 96 bytes, so one cache line (64 bytes) covers
     less than one full struct. `mass` is 8 bytes; at best 8/64 = 12.5% of the
     loaded line is the field you want. The remaining ~87.5% is `id`, `velocity`,
