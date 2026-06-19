@@ -3,21 +3,28 @@ site_url: https://CollinsEM.github.io/HPC-Tutorials/
 site_description: >
   A hands-on tutorial covering parallel programming models and best practices
   for high-performance computing on workstations and SLURM clusters.
+copyright: >
+  Developed at the High Performance Computing Collaboratory (HPC<sup>2</sup>),
+  Mississippi State University — serving the University, State, and Nation
+  through excellence in computational science and engineering.
 
 theme:
   name: material
+  logo: assets/HPC_OPA_white.png
+  favicon: assets/hpc2.ico
+  font:
+    text: Open Sans
+    code: Roboto Mono
   palette:
+    # Light mode — MSU maroon on white
     - scheme: default
-      primary: indigo
-      accent: indigo
       toggle:
-        icon: material/brightness-7
+        icon: material/weather-night
         name: Switch to dark mode
+    # Dark mode — HPC2 dark aesthetic with maroon accents
     - scheme: slate
-      primary: indigo
-      accent: indigo
       toggle:
-        icon: material/brightness-4
+        icon: material/weather-sunny
         name: Switch to light mode
   features:
     - content.code.copy
