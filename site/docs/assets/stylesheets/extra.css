@@ -48,6 +48,16 @@
 }
 
 /* -------------------------------------------------------------------------
+   Header logo — the MSU "M" emblem is a compact (~1.6:1) mark. Material's
+   default 1.2rem square crops it; bump the height a little and let the
+   width follow the aspect ratio.
+   ------------------------------------------------------------------------- */
+.md-header__button.md-logo img {
+  height: 2rem;
+  width: auto;
+}
+
+/* -------------------------------------------------------------------------
    Footer attribution — keep the HPC^2 superscript tidy
    ------------------------------------------------------------------------- */
 .md-footer-copyright sup {

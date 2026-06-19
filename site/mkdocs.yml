@@ -10,7 +10,7 @@ copyright: >
 
 theme:
   name: material
-  logo: assets/HPC_OPA_white.png
+  logo: assets/MSU_M_white.svg
   favicon: assets/hpc2.ico
   font:
     text: Open Sans
