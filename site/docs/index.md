@@ -23,7 +23,9 @@ multi-core CPUs, and GPU accelerators.
 | [6](modules/06-omp-offload.md) | OpenMP Offload | GPU programming with `#pragma omp target` directives |
 | [7](modules/07-mpi.md) | MPI | Distributed-memory parallelism, message passing, collectives |
 | [8](modules/08-kokkos.md) | Kokkos & MATAR | Performance portability across CPU/GPU backends |
-| [9](modules/09-profiling.md) | Profiling | LIKWID, Valgrind, and the roofline model |
+| [9](modules/09-profiling.md) | Profiling | LIKWID hardware counters and the roofline model |
+| [10](modules/10-valgrind.md) | Valgrind | Memory errors, data races, cache and hotspot analysis |
+| [11](modules/11-nsight.md) | GPU Profiling | Nsight Systems & Nsight Compute for CUDA kernels |
 
 ## How to use this tutorial
 

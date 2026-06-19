@@ -95,39 +95,12 @@ Run with `likwid-perfctr -C 0 -g MEM1 -m ./stream_triad` (`-m` enables markers).
 
 ## Valgrind — Hotspots, Caches, and Correctness
 
-Valgrind runs your program on a synthetic CPU. It is slow (10–50× slowdown) but needs no special privileges and sees everything. Three tools matter here.
+Where LIKWID reads real hardware counters, **Valgrind** runs your program on a synthetic CPU — slow, but needs no privileges and sees everything. It complements LIKWID along two axes: `callgrind` finds hotspots by instruction count, `cachegrind` simulates cache and branch behavior, and `memcheck`/`helgrind` catch the memory and threading bugs that often masquerade as performance mysteries (a heap overrun, an uninitialized accumulator, or the nondeterministic results of a data race like the [MATAR `FOR_ALL`](08-kokkos.md)).
 
-### callgrind — call-graph profiling
+Valgrind has enough depth — and enough day-to-day importance for debugging — to warrant its own module: see **[Module 10: Valgrind](10-valgrind.md)** for the full treatment of memcheck, helgrind/DRD, cachegrind, callgrind, and massif.
 
-Find which functions cost the most:
-
-```bash
-valgrind --tool=callgrind --callgrind-out-file=callgrind.out ./stream_triad
-callgrind_annotate callgrind.out
-```
-
-`callgrind_annotate` prints a ranked list of functions by instruction count, with per-line annotations. For a visual call graph, open `callgrind.out` in **KCachegrind**. (When KCachegrind is unavailable, `callgrind_annotate` gives the same data as text — this is exactly the fallback noted in the repo's `notes.txt`.)
-
-### cachegrind — cache and branch simulation
-
-```bash
-valgrind --tool=cachegrind ./stream_triad
-```
-
-cachegrind simulates the L1/LL caches and branch predictor, reporting miss rates per function and per line. It is how you confirm a suspected cache problem — e.g., that a strided access pattern or an [array-of-structs layout](01-hardware.md) is thrashing the cache.
-
-!!! warning "Simulated, not measured"
-    cachegrind models a *generic* cache, not your exact CPU, and ignores hardware prefetchers and out-of-order execution. Use it to find *relative* problems (this loop misses far more than that one), and use LIKWID's hardware counters for *absolute* numbers on real silicon.
-
-### memcheck — memory correctness
-
-The default tool finds leaks, invalid reads/writes, and uninitialized memory:
-
-```bash
-valgrind ./your_program          # memcheck is the default
-```
-
-Not a speed tool, but correctness bugs (a heap overrun, an uninitialized accumulator) often masquerade as performance mysteries. Run it when results are wrong or nondeterministic — exactly the symptom of the [MATAR data race](08-kokkos.md) (though races specifically need the `helgrind`/`drd` tools, not memcheck).
+!!! note "CPU tools only"
+    LIKWID and Valgrind both analyze the *host CPU*. They cannot see inside a GPU kernel — for CUDA profiling use the Nsight tools in **[Module 11](11-nsight.md)**.
 
 ---
 
