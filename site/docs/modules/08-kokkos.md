@@ -225,3 +225,13 @@ MATAR is built the same way as Kokkos (`build.sh -t <backend>`), since it compil
 3. A `Kokkos::View` defaults to device memory, requiring mirror views for host access. How does this explicit host/device separation compare to the unified-memory model used by `std::par` ([Module 5](05-stdpar.md)) and OpenMP offload ([Module 6](06-omp-offload.md))? When is explicit better?
 
 4. You have a CUDA code today and an AMD GPU cluster arriving next year. Estimate the relative effort of (a) porting the CUDA by hand to HIP versus (b) rewriting it in Kokkos now. What assumptions drive your answer?
+
+---
+
+## References
+
+### Reference materials
+
+- [Kokkos](https://github.com/kokkos/kokkos) — the performance-portability library.
+- [Kokkos documentation (Core Wiki)](https://kokkos.org/kokkos-core-wiki/) — programming guide and API reference.
+- [MATAR](https://github.com/lanl/MATAR) — the array/loop abstraction layered on top of Kokkos.
