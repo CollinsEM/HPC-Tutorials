@@ -133,7 +133,7 @@ Tools like **Intel Advisor** generate a roofline automatically by measuring FLOP
 
 ## Assignment
 
-Profile the Stream Triad from Module 2 and locate it on the roofline.
+Profile the Stream Triad from [Module 2](02-autovec.md) and locate it on the roofline.
 
 1. **Topology.** Run `likwid-topology -g`. Record your L1/L2/L3 sizes and physical core count. Is `STREAM_ARRAY_SIZE` (800000 doubles ≈ 6.4 MB) larger than your last-level cache? What does that imply about where the data lives?
 

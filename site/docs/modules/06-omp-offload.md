@@ -78,7 +78,7 @@ The `map` clauses specify direction and extent:
 The `[0:n]` is *array-section* syntax: start index `0`, length `n`. Always specify it for heap or pointer data — the compiler cannot infer the length of a `double *`.
 
 !!! warning "Choose the map direction deliberately"
-    Defaulting everything to `tofrom` doubles your PCIe traffic. The triad only *reads* `a` and `b` and only *writes* `c`, so `map(to: a, b)` and `map(from: c)` move each array across the bus exactly once. Getting this wrong is the most common performance bug in offload code — and, as Module 4 showed, data transfer usually dominates the runtime of a memory-bound kernel.
+    Defaulting everything to `tofrom` doubles your PCIe traffic. The triad only *reads* `a` and `b` and only *writes* `c`, so `map(to: a, b)` and `map(from: c)` move each array across the bus exactly once. Getting this wrong is the most common performance bug in offload code — and, as [Module 4](04-cuda.md) showed, data transfer usually dominates the runtime of a memory-bound kernel.
 
 ---
 
@@ -180,7 +180,7 @@ GPU offload requires both an OpenMP-capable compiler *and* an offload backend fo
 
 **Task 3 — Measure the map cost.** Temporarily change `map(to: a[0:n], b[0:n]) map(from: c[0:n])` to `map(tofrom: a[0:n], b[0:n], c[0:n])` and compare the runtime. You are now copying all three arrays both directions. Quantify the slowdown.
 
-**Task 4 — Compare the three GPU models.** You now have runtimes for the same 80M-element triad from CUDA (Module 4), `std::par` (Module 5), and OpenMP offload. Tabulate kernel time and total time for each. Which gives the best performance? Which required the least code?
+**Task 4 — Compare the three GPU models.** You now have runtimes for the same 80M-element triad from CUDA ([Module 4](04-cuda.md)), `std::par` ([Module 5](05-stdpar.md)), and OpenMP offload. Tabulate kernel time and total time for each. Which gives the best performance? Which required the least code?
 
 ---
 

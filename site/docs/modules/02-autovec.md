@@ -232,6 +232,8 @@ Several details are worth noting:
 ### Build and Run
 
 === "Workstation"
+    See [Running on a Workstation](../running/workstation.md) for the toolchain
+    prerequisites; then, from the repository root:
     ```bash
     cd examples/autovec
     mkdir build && cd build
@@ -246,7 +248,9 @@ Several details are worth noting:
     sbatch examples/autovec/run.slurm
     ```
     The script pins the process to a single core and requests exclusive node
-    access to avoid bandwidth contention from other jobs.
+    access to avoid bandwidth contention from other jobs. See
+    [Running on a SLURM Cluster](../running/slurm.md) for the general
+    submit/monitor workflow and how to adapt module and partition names.
 
 ### Expected Output
 

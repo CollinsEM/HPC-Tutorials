@@ -34,6 +34,7 @@ theme:
     - navigation.tabs.sticky
     - navigation.sections
     - navigation.expand
+    - navigation.footer
     - navigation.top
     - toc.integrate
     - search.highlight

@@ -432,13 +432,13 @@ shares the memory subsystem, so memory-bound loops gain little from it.
    Which loop should carry the `#pragma omp parallel for`, and why? What happens
    if you place it on the outer feature loop instead?
 
-2. Why does speedup plateau below the thread count? Use Amdahl's Law and the
-   roofline model together: what fraction of the runtime is serial, and does
-   bandwidth saturation impose a separate ceiling?
+2. Why does speedup plateau below the thread count? Use [Amdahl's Law](00-parallel-theory.md)
+   and the [roofline model](02-autovec.md) together: what fraction of the runtime is
+   serial, and does bandwidth saturation impose a separate ceiling?
 
 3. The data is stored as `vector<vector<double>>`. Accessing column $j$ across
    all rows requires a pointer dereference plus a stride equal to the row
    allocation size — this is not cache-friendly for the inner loop. How would
    changing to a flat `double data[NumPatients * NumFeatures]` layout with
-   row-major indexing (`data[i * NumFeatures + j]`) affect cache behavior and
+   row-major indexing (`data[i * NumFeatures + j]`) affect [cache behavior](01-hardware.md) and
    SIMD auto-vectorization?

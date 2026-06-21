@@ -7,7 +7,7 @@ By the end of this module you will be able to:
 - Explain the three C++17 execution policies: `seq`, `par`, `par_unseq`
 - Use `std::transform` with a parallel execution policy for the Stream Triad
 - Compile for GPU execution with NVIDIA's `nvc++` and `-stdpar=gpu`
-- Compare `std::par` to explicit OpenMP and CUDA implementations
+- Compare `std::par` to explicit [OpenMP](03-openmp.md) and [CUDA](04-cuda.md) implementations
 
 ---
 

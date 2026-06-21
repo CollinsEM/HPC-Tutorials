@@ -275,8 +275,8 @@ different backends:
 
 The tradeoff: abstraction layers impose a compilation and conceptual overhead. Code
 written to Kokkos idioms is portable but requires the Kokkos runtime to be installed
-and the developer to understand Kokkos's execution and memory space model. Later
-modules in this tutorial include a Kokkos example to demonstrate the tradeoff.
+and the developer to understand Kokkos's execution and memory space model.
+[Module 8](08-kokkos.md) works through a Kokkos example to demonstrate the tradeoff.
 
 ---
 

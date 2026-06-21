@@ -297,7 +297,8 @@ or the GPU spec sheet).
     Data transfer time is typically 20–50$\times$ the kernel time for this example.
     The kernel is extremely fast on the GPU, but moving 1.92 GB over PCIe at
     ~16 GB/s takes ~120 ms. For small datasets, or kernels that are called only
-    once, the GPU may not be worth the transfer overhead.
+    once, the GPU may not be worth the transfer overhead. [Module 11](11-nsight.md)
+    shows this same kernel-versus-transfer split on the Nsight Systems timeline.
 
 ### Discussion Questions
 
