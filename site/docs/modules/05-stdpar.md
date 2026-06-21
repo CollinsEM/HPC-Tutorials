@@ -228,3 +228,14 @@ placement and transfer timing than explicit CUDA.
 
 3. When would you choose explicit CUDA over `std::par` even if both produce correct
    results? Name at least two scenarios where the extra complexity is justified.
+
+---
+
+## References
+
+### Reference materials
+
+- [C++ execution policies](https://en.cppreference.com/w/cpp/algorithm/execution_policy_tag_t) — semantics of `seq`, `par`, and `par_unseq`.
+- [`std::transform`](https://en.cppreference.com/w/cpp/algorithm/transform) and [`std::reduce`](https://en.cppreference.com/w/cpp/algorithm/reduce) — the parallel algorithms used in this module.
+- [NVIDIA HPC SDK](https://developer.nvidia.com/hpc-sdk) — provides the `nvc++` compiler.
+- [Accelerating Standard C++ with GPUs using `stdpar`](https://developer.nvidia.com/blog/accelerating-standard-c-with-gpus-using-stdpar/) — NVIDIA's guide to `-stdpar=gpu`.
