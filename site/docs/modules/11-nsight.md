@@ -132,3 +132,12 @@ GPU profiling needs a GPU node, and Nsight Compute needs access to GPU performan
 3. Why is the top-down order — Nsight Systems before Nsight Compute — more efficient than profiling every kernel with `ncu` from the start?
 
 4. Occupancy for the triad kernel is moderate, yet it achieves near-peak bandwidth. Why is chasing higher occupancy pointless for this kernel, and for what kind of kernel *would* raising occupancy help?
+
+---
+
+## References
+
+### Reference materials
+
+- [Nsight Systems](https://docs.nvidia.com/nsight-systems/) — system-wide timeline profiler ([User Guide](https://docs.nvidia.com/nsight-systems/UserGuide/)).
+- [Nsight Compute](https://docs.nvidia.com/nsight-compute/) — single-kernel profiler ([CLI reference](https://docs.nvidia.com/nsight-compute/NsightComputeCli/), [Kernel Profiling Guide](https://docs.nvidia.com/nsight-compute/ProfilingGuide/)).
