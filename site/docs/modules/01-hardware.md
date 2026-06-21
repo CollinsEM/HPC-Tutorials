@@ -389,3 +389,14 @@ your achieved bandwidth is 10–20% of peak, your access pattern is the bottlene
     bytes. The compiler must emit a *gather* instruction (or scalar loads), which
     issues one memory transaction per element and cannot be pipelined as
     efficiently.
+
+---
+
+## References
+
+### Reference materials
+
+- [BLAS](https://www.netlib.org/blas/) — Basic Linear Algebra Subprograms (Netlib reference).
+- [LAPACK](https://www.netlib.org/lapack/) — Linear Algebra PACKage.
+- [LAPACKE](https://www.netlib.org/lapack/lapacke.html) — the C interface to LAPACK.
+- Ulrich Drepper, [*What Every Programmer Should Know About Memory*](https://www.akkadia.org/drepper/cpumemory.pdf) (PDF) — the canonical deep dive on caches, DRAM, and memory-hierarchy effects.
