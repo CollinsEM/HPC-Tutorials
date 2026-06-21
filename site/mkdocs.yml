@@ -36,7 +36,6 @@ theme:
     - navigation.expand
     - navigation.footer
     - navigation.top
-    - toc.integrate
     - search.highlight
 
 extra_css:
