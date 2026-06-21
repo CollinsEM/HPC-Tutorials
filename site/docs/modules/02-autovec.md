@@ -278,3 +278,20 @@ reported by LIKWID and to the theoretical peak for your system.
    other? Add the `restrict` keyword to the function signature and observe
    whether the compiler report changes. (The static arrays in this example
    cannot actually alias, but the compiler does not always know that.)
+
+---
+
+## References
+
+### Reference materials
+
+- [STREAM benchmark](https://www.cs.virginia.edu/stream/) — John McCalpin's sustainable-memory-bandwidth benchmark.
+- [Roofline model](https://doi.org/10.1145/1498765.1498785) — Williams, Waterman & Patterson, *Communications of the ACM*, 2009.
+- [Intel Intrinsics Guide](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html) — searchable reference for SIMD intrinsics.
+- [LIKWID](https://github.com/RRZE-HPC/likwid/wiki) — performance-counter and topology tools (used in [Module 9](09-profiling.md)).
+
+### Compiler auto-vectorization
+
+- [GCC](https://gcc.gnu.org/projects/tree-ssa/vectorization.html)
+- [Clang / LLVM](https://llvm.org/docs/Vectorizers.html)
+- [Intel oneAPI](https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/current/automatic-vectorization.html)
