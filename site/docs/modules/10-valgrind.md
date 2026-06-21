@@ -95,7 +95,7 @@ valgrind --tool=callgrind --callgrind-out-file=callgrind.out ./stream_triad
 callgrind_annotate callgrind.out
 ```
 
-`callgrind_annotate` ranks functions by instruction count with per-line detail; **KCachegrind** opens `callgrind.out` as an interactive call graph. Add `--cache-sim=yes --branch-sim=yes` to also model cache and branch behavior in the same run.
+`callgrind_annotate` ranks functions by instruction count with per-line detail; [**KCachegrind**](https://kcachegrind.github.io/) opens `callgrind.out` as an interactive call graph. Add `--cache-sim=yes --branch-sim=yes` to also model cache and branch behavior in the same run.
 
 ### cachegrind — cache and branch simulation
 

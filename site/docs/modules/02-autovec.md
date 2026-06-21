@@ -130,7 +130,7 @@ $$\text{Triad}_\text{peak} = 0.083 \text{ FLOP/byte} \times B_\text{peak} \text{
 
 | Compiler | Vectorization flags | Report flag |
 |----------|--------------------|----|
-| GCC | `-O3 -ftree-vectorize -march=native` | `-fopt-info-vec-optimized` |
+| [GCC](https://gcc.gnu.org/projects/tree-ssa/vectorization.html) | `-O3 -ftree-vectorize -march=native` | `-fopt-info-vec-optimized` |
 | GCC 8+ | add `-mprefer-vector-width=512` for AVX-512 preference | same |
 | Clang | `-O3 -fvectorize -march=native` | `-Rpass-analysis=loop-vectorize` |
 | Intel icc | `-O3 -xHost -restrict` | `-qopt-report=5 -qopt-report-phase=vec` |
