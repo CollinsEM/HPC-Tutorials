@@ -52,7 +52,7 @@ entire cache line per clock cycle.
 | 1 | **Optimized libraries** (BLAS, LAPACK, FFTW, Intel MKL) | Already fully vectorized; use when the operation fits |
 | 2 | **Auto-vectorization** | Compiler analyzes loops and emits SIMD instructions automatically |
 | 3 | **Compiler hints** (`#pragma GCC ivdep`, `restrict`, OpenMP SIMD) | Remove ambiguities that block auto-vectorization |
-| 4 | **Vector intrinsics** (`_mm512_add_pd`, etc.) | Explicit SIMD; portable across compilers, not across ISAs |
+| 4 | **Vector intrinsics** (`_mm512_add_pd`, etc.) — see the [Intel Intrinsics Guide](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html) | Explicit SIMD; portable across compilers, not across ISAs |
 | 5 | **Assembler** | Maximum control, zero portability |
 
 Auto-vectorization is the recommended starting point. It requires zero code
@@ -66,7 +66,7 @@ The higher levels of the table exist to overcome those conservative assumptions.
 
 ## 3. The Stream Triad Benchmark
 
-The **STREAM benchmark** is the standard measure of *sustainable* memory
+The [**STREAM benchmark**](https://www.cs.virginia.edu/stream/) is the standard measure of *sustainable* memory
 bandwidth — the bandwidth a real application can sustain, as opposed to the
 theoretical peak stated in a hardware datasheet. The **Triad** kernel is:
 
@@ -95,7 +95,7 @@ DRAM to the CPU.
 
 ## 4. The Roofline Model
 
-The **Roofline model** is a visual performance bound that answers the question:
+The [**Roofline model**](https://doi.org/10.1145/1498765.1498785) is a visual performance bound that answers the question:
 *given this hardware, what is the maximum attainable performance for a kernel
 with this arithmetic intensity?*
 

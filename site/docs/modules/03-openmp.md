@@ -14,7 +14,7 @@ By the end of this module you will be able to:
 
 ## 1. OpenMP Basics
 
-**OpenMP** is a directive-based API for shared-memory parallelism. It requires
+[**OpenMP**](https://www.openmp.org/specifications/) is a directive-based API for shared-memory parallelism. It requires
 no changes to data structures. You annotate loops and parallel regions with
 `#pragma` directives, link with `-fopenmp`, and the compiler generates
 multithreaded code. The same source file compiles correctly without `-fopenmp`

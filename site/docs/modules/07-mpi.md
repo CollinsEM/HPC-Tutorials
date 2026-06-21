@@ -15,7 +15,7 @@ By the end of this module you will be able to:
 
 ## A Different Axis of Parallelism
 
-Every module so far has used **shared memory**: threads (OpenMP), vector lanes (SIMD), or GPU threads all read and write the *same* address space. MPI is different. It is the tool for **distributed memory** — many separate processes, each with its own private memory, possibly on different physical nodes of a cluster, cooperating by *passing messages*.
+Every module so far has used **shared memory**: threads (OpenMP), vector lanes (SIMD), or GPU threads all read and write the *same* address space. [MPI](https://www.mpi-forum.org/docs/) is different. It is the tool for **distributed memory** — many separate processes, each with its own private memory, possibly on different physical nodes of a cluster, cooperating by *passing messages*.
 
 This maps to the **MIMD** category of [Flynn's taxonomy](00-parallel-theory.md): Multiple Instruction, Multiple Data. It is how computation scales *beyond a single node* — past the point where shared-memory threading runs out of cores or memory.
 

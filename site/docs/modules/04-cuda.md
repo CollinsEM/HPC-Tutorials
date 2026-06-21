@@ -21,7 +21,7 @@ a GPU is designed to hide memory latency by switching between thousands of in-fl
 threads. The hardware scheduler swaps a thread group out while it waits for memory
 and immediately runs another.
 
-When you launch a CUDA *kernel*, you specify two dimensions:
+When you launch a [CUDA](https://docs.nvidia.com/cuda/cuda-c-programming-guide/) *kernel*, you specify two dimensions:
 
 - A **grid** — the number of thread blocks to launch
 - A **thread block** — the number of threads within each block

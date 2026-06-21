@@ -15,7 +15,7 @@ By the end of this module you will be able to:
 
 ## What Valgrind Is
 
-Valgrind is a *dynamic binary instrumentation* framework. It runs your program on a synthetic CPU, watching every memory access and instruction. That makes it 10–50× slower than native execution, but it needs no special privileges and catches bugs that only manifest at runtime — the ones that cause wrong answers, sporadic crashes, or the nondeterministic results that masquerade as "performance" problems.
+[Valgrind](https://valgrind.org/docs/manual/) is a *dynamic binary instrumentation* framework. It runs your program on a synthetic CPU, watching every memory access and instruction. That makes it 10–50× slower than native execution, but it needs no special privileges and catches bugs that only manifest at runtime — the ones that cause wrong answers, sporadic crashes, or the nondeterministic results that masquerade as "performance" problems.
 
 Valgrind is a collection of tools selected with `--tool=`:
 

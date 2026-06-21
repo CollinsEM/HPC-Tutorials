@@ -18,8 +18,8 @@ LIKWID reads CPU hardware counters; Valgrind instruments CPU instructions. Neith
 
 | Tool | Scope | Question it answers |
 |------|-------|---------------------|
-| **Nsight Systems** (`nsys`) | Whole application timeline | *Where does wall-clock time go?* Kernels, memcpys, API calls, gaps, CPU↔GPU overlap |
-| **Nsight Compute** (`ncu`) | One kernel, in depth | *Why is this kernel slow?* Occupancy, memory throughput, instruction mix, roofline |
+| [**Nsight Systems**](https://docs.nvidia.com/nsight-systems/) (`nsys`) | Whole application timeline | *Where does wall-clock time go?* Kernels, memcpys, API calls, gaps, CPU↔GPU overlap |
+| [**Nsight Compute**](https://docs.nvidia.com/nsight-compute/) (`ncu`) | One kernel, in depth | *Why is this kernel slow?* Occupancy, memory throughput, instruction mix, roofline |
 
 The workflow is top-down: **Nsight Systems first** to find which kernel (or which data transfer) dominates, then **Nsight Compute** to dissect that specific kernel. Profiling everything at the `ncu` level first is a common waste of time.
 

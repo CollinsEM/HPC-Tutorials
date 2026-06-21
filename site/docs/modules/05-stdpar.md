@@ -13,7 +13,7 @@ By the end of this module you will be able to:
 
 ## 1. Standard Parallel Algorithms
 
-C++17 added *execution policies* to most `<algorithm>` functions. The policy is
+C++17 added [*execution policies*](https://en.cppreference.com/w/cpp/algorithm/execution_policy_tag_t) to most `<algorithm>` functions. The policy is
 passed as the first argument and tells the implementation how it may schedule work:
 
 | Policy | Meaning |
@@ -27,7 +27,7 @@ These policies apply to a broad set of algorithms: `std::transform`, `std::reduc
 
 !!! note "Backend dependency"
     On CPU, `par` typically dispatches to Intel's libTBB or an OpenMP thread pool,
-    depending on how the standard library was built. With NVIDIA's `nvc++` compiler
+    depending on how the standard library was built. With NVIDIA's [`nvc++`](https://developer.nvidia.com/hpc-sdk) compiler
     and `-stdpar=gpu`, the **same** `par` policy compiles to CUDA kernels with no
     source changes. The execution policy is the only knob.
 

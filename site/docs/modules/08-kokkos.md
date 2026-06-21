@@ -26,7 +26,7 @@ By the end of this module you will be able to:
 
 A code written in CUDA runs only on NVIDIA hardware. Porting it to an AMD or Intel machine means rewriting every kernel. For a large scientific code with a decade of development behind it, that is untenable.
 
-**Kokkos** solves this by interposing a C++ abstraction layer between your code and the backend. You write the algorithm *once* using Kokkos constructs; at compile time you select a backend (Serial, OpenMP, Threads, CUDA, HIP), and Kokkos generates the appropriate low-level code. It is plain C++ — no special compiler required — so the same `matmul.cpp` in this module compiles to a multicore CPU binary or an NVIDIA GPU binary depending only on how you build Kokkos.
+[**Kokkos**](https://github.com/kokkos/kokkos) solves this by interposing a C++ abstraction layer between your code and the backend. You write the algorithm *once* using Kokkos constructs; at compile time you select a backend (Serial, OpenMP, Threads, CUDA, HIP), and Kokkos generates the appropriate low-level code. It is plain C++ — no special compiler required — so the same `matmul.cpp` in this module compiles to a multicore CPU binary or an NVIDIA GPU binary depending only on how you build Kokkos.
 
 !!! note "A different benchmark: matrix multiply"
     Like the [MPI module](07-mpi.md), this module uses a **dense matrix multiply** ($C = A \times B$, $N = 1024$) rather than the Stream Triad. Matmul performs $2N^3$ floating-point operations on $3N^2$ data — an arithmetic intensity of $O(N)$, which makes it **compute-bound** for large $N$. That is the opposite regime from the bandwidth-bound triad, and it puts the kernel on the flat "compute ceiling" of the [roofline model](02-autovec.md) where extra FLOP/s actually help.
@@ -159,7 +159,7 @@ Run the same kernel under `serial`, `openmp`, and (if you have a GPU) `cuda`, an
 
 ## MATAR: A Higher-Level Layer
 
-MATAR is a thin array/loop abstraction built *on top of* Kokkos. It trades some explicitness for terser code: `CArrayKokkos` replaces `Kokkos::View`, and the `FOR_ALL` macro replaces `parallel_for` + policy + lambda. The same matmul, from `examples/MATAR/Example1/matmul.cpp`:
+[MATAR](https://github.com/lanl/MATAR) is a thin array/loop abstraction built *on top of* Kokkos. It trades some explicitness for terser code: `CArrayKokkos` replaces `Kokkos::View`, and the `FOR_ALL` macro replaces `parallel_for` + policy + lambda. The same matmul, from `examples/MATAR/Example1/matmul.cpp`:
 
 ```cpp
 using namespace mtr;

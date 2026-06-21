@@ -24,7 +24,7 @@ A disciplined workflow:
 4. **Optimize** the dominant cost.
 5. **Re-measure** to confirm a real gain and catch regressions.
 
-This module covers two complementary tools — **LIKWID** for hardware-counter and bandwidth analysis, **Valgrind** for hotspots, cache simulation, and memory correctness — and the **roofline model** that ties their numbers to a decision.
+This module covers two complementary tools — [**LIKWID**](https://github.com/RRZE-HPC/likwid/wiki) for hardware-counter and bandwidth analysis, **Valgrind** for hotspots, cache simulation, and memory correctness — and the **roofline model** that ties their numbers to a decision.
 
 !!! note "Tools used here"
     LIKWID, Valgrind, and KCachegrind can be installed via the repository's `install_stuff.sh` (LIKWID needs `sudo` and access to hardware performance counters). The examples below profile the auto-vectorization benchmark from [Module 2](02-autovec.md), `examples/autovec/stream_triad.c`, which already carries a LIKWID marker comment at the top.
