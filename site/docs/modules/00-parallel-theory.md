@@ -312,3 +312,17 @@ and the developer to understand Kokkos's execution and memory space model.
     algebra). Examples of GPU-unfavorable properties: irregular sparse graph
     traversal, adaptive mesh refinement with frequent dynamic allocation, tightly
     coupled implicit solvers requiring global reductions at every timestep.
+
+---
+
+## References
+
+### Reference materials
+
+The performance-portability frameworks discussed in this module:
+
+- [Kokkos](https://github.com/kokkos/kokkos) — performance-portable C++ programming model (covered in [Module 8](08-kokkos.md)).
+- [RAJA](https://github.com/LLNL/RAJA) — LLNL's portability abstraction layer.
+- [SYCL](https://www.khronos.org/sycl/) — Khronos open standard for single-source heterogeneous C++.
+- [HIP](https://rocm.docs.amd.com/projects/HIP/en/latest/) — AMD's CUDA-like API for portable GPU kernels.
+- [OpenMP](https://www.openmp.org/specifications/) — directive-based parallelism for CPU and, via offload, GPU.
