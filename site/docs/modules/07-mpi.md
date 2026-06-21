@@ -295,10 +295,10 @@ Look at the **distribution time versus computation time**. For this problem the 
 
 ### Reference materials
 
-- [MPI Forum standard](https://www.mpi-forum.org/docs/) — the normative specification that defines the semantics of every MPI routine. The authoritative source, but dense.
-- [Open MPI documentation](https://www.open-mpi.org/doc/) — implementation docs and per-function man pages; the source for the function links below.
-- [MPICH documentation](https://www.mpich.org/static/docs/latest/) — man pages for the other major open-source implementation. The API semantics match the standard; the two implementations differ only in implementation-specific notes.
-- [rookieHPC MPI guide](https://rookiehpc.org/mpi/) — community-maintained, beginner-friendly pages with plain-language parameter explanations and a full runnable example for each call.
+- [MPI Forum standard](https://www.mpi-forum.org/docs/) — the normative specification; authoritative but dense.
+- [Open MPI documentation](https://www.open-mpi.org/doc/) — implementation docs and the per-function man pages linked below.
+- [MPICH documentation](https://www.mpich.org/static/docs/latest/) — man pages for the other major implementation; semantics match the standard.
+- [rookieHPC MPI guide](https://rookiehpc.org/mpi/) — community-maintained pages with plain-language explanations and runnable examples.
 
 ### Functions used in this module
 
