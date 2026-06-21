@@ -310,3 +310,17 @@ or the GPU spec sheet).
 
 3. Data transfer time dominates total runtime. Propose a strategy to reduce it.
    (Hint: think about which arrays actually change between loop iterations.)
+
+---
+
+## References
+
+### Reference materials
+
+- [CUDA C++ Programming Guide](https://docs.nvidia.com/cuda/cuda-c-programming-guide/) — the core language and execution-model reference.
+- [CUDA Runtime API](https://docs.nvidia.com/cuda/cuda-runtime-api/) — reference for the runtime calls below.
+- [CUDA C++ Best Practices Guide](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/) — performance and correctness guidance.
+
+### Runtime API calls used in this module
+
+The memory-management and error-handling calls used here — `cudaMalloc`, `cudaMemcpy`, `cudaFree`, `cudaGetLastError`, `cudaGetErrorString`, and `cudaDeviceSynchronize` — are documented in the [CUDA Runtime API](https://docs.nvidia.com/cuda/cuda-runtime-api/) reference, under its Memory Management and Error Handling sections.
