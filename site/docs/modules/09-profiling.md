@@ -167,3 +167,14 @@ Profile the Stream Triad from [Module 2](02-autovec.md) and locate it on the roo
 3. cachegrind says a loop has a 40% L1 miss rate, but LIKWID's hardware counters show the loop runs near peak bandwidth anyway. How can both be true? (Hint: hardware prefetchers.)
 
 4. A kernel sits exactly on the ridge point of your roofline. You move from single to double precision. Which way does its arithmetic intensity shift, and does that make it more compute- or more bandwidth-bound?
+
+---
+
+## References
+
+### Reference materials
+
+- [LIKWID](https://github.com/RRZE-HPC/likwid/wiki) — hardware-counter, topology, and thread-affinity tools.
+- [Roofline model](https://doi.org/10.1145/1498765.1498785) — Williams, Waterman & Patterson, *Communications of the ACM*, 2009.
+
+For memory and threading correctness see [Module 10](10-valgrind.md) (Valgrind); for GPU kernel profiling see [Module 11](11-nsight.md) (Nsight).
