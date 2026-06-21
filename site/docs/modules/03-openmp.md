@@ -442,3 +442,15 @@ shares the memory subsystem, so memory-bound loops gain little from it.
    changing to a flat `double data[NumPatients * NumFeatures]` layout with
    row-major indexing (`data[i * NumFeatures + j]`) affect [cache behavior](01-hardware.md) and
    SIMD auto-vectorization?
+
+---
+
+## References
+
+### Reference materials
+
+- [OpenMP specifications](https://www.openmp.org/specifications/) — the API standard.
+- [OpenMP reference guides](https://www.openmp.org/resources/refguides/) — concise cheat sheets for directives, clauses, and runtime routines.
+- [LLNL OpenMP tutorial](https://hpc-tutorials.llnl.gov/openmp/) — a worked introduction with examples.
+
+The runtime routines used in this module (`omp_get_thread_num`, `omp_get_num_threads`, `omp_set_num_threads`) and the `OMP_NUM_THREADS` environment variable are documented in the reference guides above.
