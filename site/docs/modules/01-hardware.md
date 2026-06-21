@@ -331,7 +331,7 @@ Common cases:
   `CblasTrans` when providing a C row-major matrix where column-major is expected.
 
 !!! tip
-    If you are calling LAPACK from C, use the C LAPACKE interface (part of the
+    If you are calling [LAPACK](https://www.netlib.org/lapack/) from C, use the [C LAPACKE](https://www.netlib.org/lapack/lapacke.html) interface (part of the
     reference LAPACK distribution), which handles the row/column-major translation
     for you.
 
