@@ -288,3 +288,40 @@ Look at the **distribution time versus computation time**. For this problem the 
 4. Using the timing breakdown, suppose you double the number of ranks. Amdahl's Law aside, what happens to *distribution* time and *computation* time individually? At what point does adding ranks stop helping?
 
 5. A production code would overlap communication and computation using the non-blocking pattern from Example 2. In the matrix-vector multiply, what work could a process do *while* its matrix rows are still arriving?
+
+---
+
+## References
+
+### Reference materials
+
+- [MPI Forum standard](https://www.mpi-forum.org/docs/) — the normative specification that defines the semantics of every MPI routine. The authoritative source, but dense.
+- [Open MPI documentation](https://www.open-mpi.org/doc/) — implementation docs and per-function man pages; the source for the function links below.
+- [MPICH documentation](https://www.mpich.org/static/docs/latest/) — man pages for the other major open-source implementation. The API semantics match the standard; the two implementations differ only in implementation-specific notes.
+- [rookieHPC MPI guide](https://rookiehpc.org/mpi/) — community-maintained, beginner-friendly pages with plain-language parameter explanations and a full runnable example for each call.
+
+### Functions used in this module
+
+Links point to the Open MPI man pages.
+
+**Environment and timing:**
+[MPI_Init](https://www.open-mpi.org/doc/current/man3/MPI_Init.3.php),
+[MPI_Finalize](https://www.open-mpi.org/doc/current/man3/MPI_Finalize.3.php),
+[MPI_Comm_rank](https://www.open-mpi.org/doc/current/man3/MPI_Comm_rank.3.php),
+[MPI_Comm_size](https://www.open-mpi.org/doc/current/man3/MPI_Comm_size.3.php),
+[MPI_Wtime](https://www.open-mpi.org/doc/current/man3/MPI_Wtime.3.php)
+
+**Point-to-point communication:**
+[MPI_Send](https://www.open-mpi.org/doc/current/man3/MPI_Send.3.php),
+[MPI_Recv](https://www.open-mpi.org/doc/current/man3/MPI_Recv.3.php),
+[MPI_Sendrecv](https://www.open-mpi.org/doc/current/man3/MPI_Sendrecv.3.php),
+[MPI_Isend](https://www.open-mpi.org/doc/current/man3/MPI_Isend.3.php),
+[MPI_Irecv](https://www.open-mpi.org/doc/current/man3/MPI_Irecv.3.php),
+[MPI_Waitall](https://www.open-mpi.org/doc/current/man3/MPI_Waitall.3.php)
+
+**Collective communication:**
+[MPI_Bcast](https://www.open-mpi.org/doc/current/man3/MPI_Bcast.3.php),
+[MPI_Scatter](https://www.open-mpi.org/doc/current/man3/MPI_Scatter.3.php),
+[MPI_Scatterv](https://www.open-mpi.org/doc/current/man3/MPI_Scatterv.3.php),
+[MPI_Gather](https://www.open-mpi.org/doc/current/man3/MPI_Gather.3.php),
+[MPI_Allgather](https://www.open-mpi.org/doc/current/man3/MPI_Allgather.3.php)
