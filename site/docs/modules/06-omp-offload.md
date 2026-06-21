@@ -207,3 +207,14 @@ The reported runtime includes the data mapping (host↔device transfer), which �
 3. OpenMP offload, CUDA, and `std::par` all expressed the same computation. Rank them by (a) lines of code changed from the serial version, (b) control over data movement, and (c) portability across GPU vendors. When would you reach for each?
 
 4. The same OpenMP-offload binary runs on a machine with no GPU by executing `target` regions on the host. What does this portability cost you, and when is it worth it?
+
+---
+
+## References
+
+### Reference materials
+
+- [OpenMP specifications](https://www.openmp.org/specifications/) — the `target` offload directives.
+- [NVIDIA HPC SDK](https://developer.nvidia.com/hpc-sdk) — the `nvc++ -mp=gpu` offload compiler.
+- [GCC offloading](https://gcc.gnu.org/wiki/Offloading) — building and using GCC's NVPTX offload support.
+- [LLVM/Clang OpenMP](https://openmp.llvm.org/) — Clang's OpenMP and offload runtime.
