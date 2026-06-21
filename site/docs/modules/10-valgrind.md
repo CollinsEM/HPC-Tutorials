@@ -169,3 +169,21 @@ ms_print massif.out.<pid>
 3. helgrind flags a "race" inside `libgomp` that you did not write. How do you decide whether it is a real bug in your use of OpenMP versus benign runtime noise — and what do you do about it either way?
 
 4. You have a wrong-answer bug that only appears with 8 threads, never with 1. Which Valgrind tool do you reach for, and why would memcheck alone not find it?
+
+---
+
+## References
+
+### Reference materials
+
+- [Valgrind manual](https://valgrind.org/docs/manual/) — top-level documentation.
+- [KCachegrind](https://kcachegrind.github.io/) — interactive viewer for callgrind output.
+
+### Tool manuals
+
+- [Memcheck](https://valgrind.org/docs/manual/mc-manual.html) — memory errors and leaks.
+- [Helgrind](https://valgrind.org/docs/manual/hg-manual.html) — data races and locking errors.
+- [DRD](https://valgrind.org/docs/manual/drd-manual.html) — alternative data-race detector.
+- [Cachegrind](https://valgrind.org/docs/manual/cg-manual.html) — cache and branch-prediction simulation.
+- [Callgrind](https://valgrind.org/docs/manual/cl-manual.html) — call-graph and instruction profiling.
+- [Massif](https://valgrind.org/docs/manual/ms-manual.html) — heap profiler.
