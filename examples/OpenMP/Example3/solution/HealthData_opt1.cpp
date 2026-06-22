@@ -91,7 +91,7 @@ void compute_correlation(const std::vector<std::vector<double>>& data, const std
 // Main function
 int main() {
     std::cout << "Analyzing health data for " << NumPatients << " patients with " << NumFeatures << " features\n";
-    nthreads = omp_get_num_threads();
+    int nthreads = omp_get_max_threads();
 
     std::cout << "Number of threads: " << nthreads << std::endl;
     {
