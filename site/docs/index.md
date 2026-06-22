@@ -18,7 +18,7 @@ multi-core CPUs, and GPU accelerators.
 | [1](modules/01-hardware.md) | Hardware & data layout | Memory hierarchy, cache-friendly code, DOP vs OOP |
 | [2](modules/02-autovec.md) | Auto-vectorization | SIMD, compiler flags, measuring bandwidth |
 | [3](modules/03-openmp.md) | OpenMP | Thread-level CPU parallelism with `#pragma omp` |
-| [4](modules/04-cuda.md) | CUDA | GPU kernels, device memory, data transfers |
+| [4](modules/04-cuda.md) | CUDA | GPU kernels, device memory, transfers, 2D matrix multiply |
 | [5](modules/05-stdpar.md) | C++17 `std::par` | GPU-accelerated standard algorithms |
 | [6](modules/06-omp-offload.md) | OpenMP Offload | GPU programming with `#pragma omp target` directives |
 | [7](modules/07-mpi.md) | MPI | Distributed-memory parallelism, message passing, collectives |

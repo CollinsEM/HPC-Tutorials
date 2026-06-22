@@ -83,23 +83,24 @@ T rand_to_real() {
  * C: Output matrix (result)
  * size: Size of the matrices (N)
  */
-void matrixMultiply(real_t *A, real_t *B, real_t *C, int size) {
+__global__ void matrixMultiply(real_t *A, real_t *B, real_t *C, int size) {
     // Each thread calculates one element of the result matrix
     // This line figures out which element this thread is responsible for
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
-    
+
     // Make sure we don't try to calculate elements outside our matrix
     if (row < size && col < size) {
         real_t sum = 0.0;
-        
-        // Calculate one element of the result matrix
-        // This is the standard matrix multiplication formula:
-        // C[i,j] = sum(A[i,k] * B[k,j]) for k from 0 to N-1
 
-        
-        // Save our result C[row][col] = sum
+        // TODO: compute one output element as the dot product of row `row`
+        //       of A with column `col` of B. The formula is
+        //       C[i,j] = sum_k A[i,k] * B[k,j]:
+        //   for (int i = 0; i < size; i++)
+        //     sum += A[row * size + i] * B[i * size + col];
 
+        // TODO: store the result back to global memory:
+        //   C[row * size + col] = sum;
     }
 }
 
@@ -139,15 +140,15 @@ int main() {
     
     // Step 2: Set up GPU memory
     // Allocate memory on the GPU for our matrices
-    real_t *d_A, *d_B, *d_C;  // 'd_' prefix indicates GPU memory (d for device)
-    // Hint: cudaMalloc((void**)&d_A, bytes);
-    
+    real_t *d_A = nullptr, *d_B = nullptr, *d_C = nullptr;  // 'd_' = GPU (device) memory
+    // TODO: allocate d_A, d_B, d_C on the device, e.g.
+    //   cudaMalloc((void**)&d_A, bytes);
     cudaCheckError();
-    
+
     // Step 3: Copy data from CPU to GPU
     // This is necessary because GPU has its own separate memory
-    // Hint: cudaMemcpy(<device_pointer>, <host_pointer>, <size>, <direction>);
-
+    // TODO: copy h_A -> d_A and h_B -> d_B, e.g.
+    //   cudaMemcpy(d_A, h_A, bytes, cudaMemcpyHostToDevice);
     cudaCheckError();
     
     // Step 4: Plan how to divide the work
@@ -156,23 +157,25 @@ int main() {
     // dim3 is a CUDA type that specifies a 3D grid/block size
     // Here we create a 2D block of BLOCK_SIZE x BLOCK_SIZE threads (e.g. 32x32)
     // This means each thread block will be a square of threads working together
-    dim3 threadsPerBlock( , );
-    
-    
+    // TODO: create a 2D block of BLOCK_SIZE x BLOCK_SIZE threads:
+    //   dim3 threadsPerBlock(BLOCK_SIZE, BLOCK_SIZE);
+
     // Calculate the number of blocks needed to cover the whole matrix
     // We add (BLOCK_SIZE-1) to size before dividing to round up to the next block
     // For example: if size=1000 and BLOCK_SIZE=32
     // Then (1000+31)/32 = 1031/32 = 32.21875 which rounds down to 32 blocks
     // This ensures we have enough blocks to cover all elements
-    dim3 blocksPerGrid( , );
+    // TODO: create the grid, rounding up in each dimension:
+    //   dim3 blocksPerGrid((size + BLOCK_SIZE - 1) / BLOCK_SIZE,
+    //                      (size + BLOCK_SIZE - 1) / BLOCK_SIZE);
     
     // Step 5: Run the calculation and measure time
     printf("Performing matrix multiplication...\n");
     double start_time = get_time_ms();
     
     // Launch our calculation on the GPU
-
-    
+    // TODO: launch the kernel with your grid and block dimensions:
+    //   matrixMultiply<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, size);
     cudaCheckError();
     
     // Wait for all GPU threads to finish

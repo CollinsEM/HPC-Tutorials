@@ -10,6 +10,8 @@ By the end of this module you will be able to:
 - Check CUDA API error codes and kernel launch errors
 - Measure kernel execution time separately from data transfer time
 - Compute effective memory bandwidth and compare to GPU specs
+- Map threads to a 2D problem with 2D grids and blocks
+- Contrast a compute-bound kernel (matrix multiply) with a bandwidth-bound one (Stream Triad) on the roofline
 
 ---
 
@@ -310,6 +312,138 @@ or the GPU spec sheet).
 
 3. Data transfer time dominates total runtime. Propose a strategy to reduce it.
    (Hint: think about which arrays actually change between loop iterations.)
+
+---
+
+## 7. A Compute-Bound Kernel: Matrix Multiplication
+
+The Stream Triad sits at the far *left* of the [roofline](02-autovec.md): with an
+arithmetic intensity of ~0.08 FLOP/byte it is firmly **bandwidth-bound**. Dense
+**matrix multiplication** lives at the opposite end. Multiplying two $N \times N$
+matrices performs $2N^3$ floating-point operations on only $3N^2$ matrix elements,
+so if every element were read from memory just once the arithmetic intensity would
+be
+
+$$I = \frac{2N^3}{3N^2 \times 8 \;\text{bytes}} = \frac{N}{12} \;\text{FLOP/byte}.$$
+
+For $N = 1024$ that is ~85 FLOP/byte — far to the *right* of the ridge point, i.e.
+**compute-bound**. Matrix multiply is the canonical compute-bound kernel, and it is
+the same problem the [Kokkos and MATAR modules](08-kokkos.md) solve, which makes it
+a useful bridge: here you write it in raw CUDA; there you write it once and let a
+portability layer target any backend.
+
+The second example, `examples/CUDA/Example2/matrix_multiply.cu`, computes
+$C = A \times B$ for $N = 1024$ and verifies the first $3\times3$ block against a CPU
+reference.
+
+### Mapping threads to a 2D problem
+
+The triad was one-dimensional, so a 1D grid sufficed. A matrix is naturally 2D, so
+this kernel uses **2D blocks and a 2D grid**: each thread computes one output
+element `C[row][col]`.
+
+```cuda
+#define BLOCK_SIZE 32   // 32 x 32 = 1024 threads per block
+
+__global__ void matrixMultiply(real_t *A, real_t *B, real_t *C, int size) {
+  int row = blockIdx.y * blockDim.y + threadIdx.y;
+  int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (row < size && col < size) {
+    real_t sum = 0.0;
+    for (int i = 0; i < size; i++) {
+      sum += A[row * size + i] * B[i * size + col];   // row of A . column of B
+    }
+    C[row * size + col] = sum;
+  }
+}
+```
+
+The launch configuration mirrors the 1D case, rounded up in *both* dimensions:
+
+```cuda
+dim3 threadsPerBlock(BLOCK_SIZE, BLOCK_SIZE);
+dim3 blocksPerGrid((size + BLOCK_SIZE - 1) / BLOCK_SIZE,
+                   (size + BLOCK_SIZE - 1) / BLOCK_SIZE);
+matrixMultiply<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, size);
+```
+
+!!! note "High arithmetic intensity is a property of the algorithm, not this kernel"
+    The $N/12$ figure assumes each matrix element is read once. This **naive** kernel
+    does not achieve that: every thread re-reads an entire row of $A$ and column of
+    $B$ straight from global memory, so each element of $A$ and $B$ is fetched $N$
+    times. Its *effective* arithmetic intensity is closer to $1/8$ FLOP/byte —
+    memory-bound in practice — which is why it reaches only a fraction of the GPU's
+    peak FLOP/s. The standard fix is **shared-memory tiling**: each block cooperatively
+    loads a tile of $A$ and $B$ into fast on-chip shared memory and reuses it, raising
+    the realized intensity toward the algorithmic ceiling. That optimization is the
+    natural next step beyond this example.
+
+### Build and run
+
+=== "Workstation"
+    The `Makefile` auto-detects your GPU's compute capability via `nvidia-smi`:
+
+    ```bash
+    cd examples/CUDA/Example2
+    make
+    ./matrix_multiply
+    ```
+
+=== "SLURM cluster"
+    See `examples/CUDA/Example2/run.slurm`. Request a GPU node with `--gres=gpu:1`
+    and load the appropriate CUDA module for your cluster.
+
+A successful run reports the achieved throughput and the verification block:
+
+```
+Matrix Size: 1024 x 1024
+Execution Time: 7.78 ms
+Performance: 275.75 GFLOPS
+
+Verification (showing first 3x3 elements of result):
+C[0][0] = 257.26 (expected: 257.26)
+...
+```
+
+The reported GFLOPS will vary with your GPU. Compare it to the card's peak FP64 (or
+FP32) rate: the gap between the two is the headroom that shared-memory tiling and
+other reuse optimizations recover.
+
+### Assignment
+
+The starter `examples/CUDA/Example2/matrix_multiply.cu` compiles as-is but does no
+GPU work yet; complete the `TODO`s:
+
+1. **Kernel body** — compute `sum` as the dot product of row `row` of `A` and column
+   `col` of `B`, then store it to `C[row * size + col]`.
+2. **Device memory** — allocate `d_A`, `d_B`, `d_C` with `cudaMalloc`.
+3. **Transfers** — copy `h_A`/`h_B` to the device; the result copy back is already in
+   place.
+4. **Launch configuration** — set `threadsPerBlock` and `blocksPerGrid`, then launch
+   the kernel.
+
+??? success "Show complete solution"
+    The complete program is at `examples/CUDA/Example2/solution/matrix_multiply.cu`.
+
+Extensions to explore:
+
+- Change the `real_t` typedef from `double` to `float` and re-measure. How does the
+  throughput change, and why? (Hint: consumer GPUs have far more FP32 than FP64
+  units.)
+- Sketch (or implement) a shared-memory tiled version and predict its effect using
+  the roofline.
+
+### Discussion Questions
+
+1. The triad and the matrix multiply use the *same* GPU yet land on opposite sides of
+   the roofline. Which hardware resource limits each, and why does adding more
+   floating-point units help one but not the other?
+2. This kernel uses 32&times;32 = 1024 threads per block. What constrains the maximum
+   block size, and what happens to occupancy if you also need shared memory per block?
+3. The naive kernel re-reads $A$ and $B$ from global memory $N$ times. Estimate the
+   total global-memory traffic with and without perfect reuse, and relate the two
+   numbers to the arithmetic intensities quoted above.
 
 ---
 
