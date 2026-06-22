@@ -13,8 +13,17 @@ Practical reference for setting up a development environment and building each e
 | CUDA | CUDA Toolkit | 11.0 | from developer.nvidia.com |
 | CUDA | nvidia-smi | — | included with NVIDIA driver |
 | stdpar | NVIDIA HPC SDK (nvc++) | 22.x | from developer.nvidia.com/hpc-sdk |
-| Profiling | LIKWID | 5.x | see install_stuff.sh or https://github.com/RRZE-HPC/likwid |
+| Profiling | LIKWID | 5.x | build from https://github.com/RRZE-HPC/likwid |
 | Profiling | Valgrind | 3.x | `apt install valgrind` |
+
+!!! note "No administrator access?"
+    The `apt install` commands above assume a Debian/Ubuntu machine on which
+    you have `sudo`. On a shared cluster you typically will **not** — instead,
+    load pre-built tools with environment modules (`module load gcc cuda
+    openmpi`; see [Running on a SLURM Cluster](slurm.md)) or build into your home
+    directory. None of the examples in this tutorial require root to *build* or
+    *run*; only LIKWID's hardware counters need a one-time privileged setup
+    (covered below).
 
 ## Verify GPU access
 
@@ -123,7 +132,7 @@ likwid-topology
 likwid-perfctr -C 0 -g MEM1 ./stream_triad
 ```
 
-Install LIKWID via the provided `install_stuff.sh` script (requires sudo) or follow the build instructions at https://github.com/RRZE-HPC/likwid.
+Build LIKWID from source following the instructions at https://github.com/RRZE-HPC/likwid. Its hardware-counter access (the `MEM` groups above) requires a one-time privileged setup — either a permissive `perf_event_paranoid` setting or LIKWID's setuid access daemon — which an administrator configures once. On HPC clusters this is normally already done; load it with `module load likwid`. Where counters are unavailable, you can still derive achieved bandwidth from the runtime the benchmark prints (see Module 2).
 
 ## Profiling with Valgrind
 

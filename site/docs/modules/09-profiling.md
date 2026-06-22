@@ -27,7 +27,7 @@ A disciplined workflow:
 This module covers two complementary tools — [**LIKWID**](https://github.com/RRZE-HPC/likwid/wiki) for hardware-counter and bandwidth analysis, **Valgrind** for hotspots, cache simulation, and memory correctness — and the **roofline model** that ties their numbers to a decision.
 
 !!! note "Tools used here"
-    LIKWID, Valgrind, and KCachegrind can be installed via the repository's `install_stuff.sh` (LIKWID needs `sudo` and access to hardware performance counters). The examples below profile the auto-vectorization benchmark from [Module 2](02-autovec.md), `examples/autovec/stream_triad.c`, which already carries a LIKWID marker comment at the top.
+    Valgrind and KCachegrind build and run without special privileges. LIKWID's hardware-counter access needs a one-time privileged setup (a permissive `perf_event_paranoid` or its setuid access daemon) that an administrator configures once — on HPC clusters this is usually already provided (`module load likwid`). Where counters are unavailable, you can still get achieved bandwidth from the runtime the benchmark prints (see [Module 2](02-autovec.md)). The examples below profile the auto-vectorization benchmark from [Module 2](02-autovec.md), `examples/autovec/stream_triad.c`, which already carries a LIKWID marker comment at the top.
 
 ---
 

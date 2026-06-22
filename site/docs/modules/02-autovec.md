@@ -214,7 +214,10 @@ Several details are worth noting:
    ```bash
    likwid-perfctr -C 0 -g MEM1 ./stream_triad
    ```
-   Record the reported bandwidth in GB/s.
+   Record the reported bandwidth in GB/s. (LIKWID's counters need a one-time
+   privileged setup; on clusters try `module load likwid`. If LIKWID is
+   unavailable, skip to the bandwidth-from-timing calculation under *Expected
+   Output* below — it needs no special tools or privileges.)
 
 4. **Enable vectorization**: Open `examples/autovec/CMakeLists.txt`. Uncomment
    the GCC flags `-fstrict-aliasing -ftree-vectorize -march=native
