@@ -178,7 +178,7 @@ mpicxx SendRecv1.cpp -o sr1 && mpiexec -n 4 ./sr1   # hangs — Ctrl+C
 mpicxx solutions/SendRecv5.cpp -o sr5 && mpiexec -n 4 ./sr5
 ```
 
-Then **stress-test version 1 of the fix** (`SendRecv2`, send-then-recv): increase `count` from 10 to 10,000,000 and rerun. Observe that it now deadlocks too, proving the eager-buffer dependency.
+Then **stress-test version 1 of the fix** (`SendRecv2`, send-then-recv): increase `count` from 10 to 100000 and rerun. Observe that it now deadlocks too, proving the eager-buffer dependency. (Keep the count in this range — the arrays are stack-allocated, so a multi-million-element count would overflow the stack and crash before the MPI calls run.)
 
 ---
 
@@ -279,7 +279,7 @@ Look at the **distribution time versus computation time**. For this problem the 
 
 ## Discussion Questions
 
-1. In Example 2, `SendRecv2` (send-then-receive) passes with `count = 10` but deadlocks with `count = 10000000`. Explain the role of the MPI eager/rendezvous protocol threshold. Why is depending on it a latent bug rather than a working optimization?
+1. In Example 2, `SendRecv2` (send-then-receive) passes with `count = 10` but deadlocks with `count = 100000`. Explain the role of the MPI eager/rendezvous protocol threshold. Why is depending on it a latent bug rather than a working optimization?
 
 2. Example 3 distributes the matrix by *rows*. If instead you distributed by *columns*, what would change about the communication pattern and the final reduction? Which decomposition is better for matrix-vector multiply, and why?
 
