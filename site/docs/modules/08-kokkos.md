@@ -231,6 +231,62 @@ MATAR is built the same way as Kokkos (`build.sh -t <backend>`), since it compil
 
 4. You have a CUDA code today and an AMD GPU cluster arriving next year. Estimate the relative effort of (a) porting the CUDA by hand to HIP versus (b) rewriting it in Kokkos now. What assumptions drive your answer?
 
+??? "Show solutions"
+    **Question 1**: Compile-time backend selection means the compiler sees a
+    specific target and can optimize fully for it: CUDA lambdas are inlined into
+    PTX, OpenMP pragmas are expanded into platform threads, and there is no
+    virtual dispatch or runtime branching overhead. The binary is self-contained
+    and carries no dead code for other backends. The cost is one binary per
+    backend — you must rebuild to switch targets, and cross-platform testing
+    requires separate compilation and execution environments. Runtime dispatch
+    (as in some earlier portability layers) would let a single binary probe
+    hardware and select a path, but at the cost of function-pointer overhead
+    on every kernel call and the inability to use backend-specific compiler
+    intrinsics.
+
+    **Question 2**: The private accumulator keeps the running total in a
+    **register** — the fastest memory on the GPU. All $N$ multiply-add operations
+    per output element happen on-chip with no global memory traffic until the
+    single final write to $C(i,j)$. The buggy in-place version issues a
+    read-modify-write to a global memory location on every $k$ iteration. Even
+    with L2 caching, this serializes through the memory hierarchy and, without
+    atomic operations, races destructively. The private accumulator therefore
+    reduces global memory transactions from $O(N)$ per output element to $O(1)$,
+    and eliminates all synchronization — both correctness and performance wins
+    from the same change.
+
+    **Question 3**: Explicit host/device separation (Kokkos) gives you precise
+    control: you choose exactly when data crosses the bus, can overlap transfers
+    with computation using async deep copies, and never pay for a migration you
+    did not request. Unified Memory (`std::par` GPU, OpenMP offload) migrates
+    pages on first access, which is convenient but introduces unpredictable
+    page-fault latency on the first kernel call and makes it difficult to reason
+    about PCIe traffic from a profiler. Explicit is better when: data is large
+    and accessed many times; transfer timing matters for overlap with computation;
+    you are profiling or optimizing a production kernel. Unified Memory is better
+    when prototyping, the data is small, or the algorithm's memory access pattern
+    is irregular enough that explicit staging is difficult to express.
+
+    **Question 4**: Open-ended; key factors:
+    (a) *CUDA→HIP by hand*: `hipify-perl` mechanically translates ~95% of the
+    CUDA API surface in minutes. The remaining effort is manual: adjusting any
+    code that relies on CUDA-specific behavior (warp size assumptions, specific
+    atomic orderings, vendor libraries with no ROCm counterpart). For a small
+    to mid-sized code, plan 1–5 days. But HIP is still GPU-specific code — the
+    next target (Intel, ARM) requires another port.
+    (b) *Rewrite in Kokkos now*: kernels must be restructured into lambdas or
+    functors; raw `cudaMalloc`/`cudaMemcpy` become Views and `deep_copy`; shared
+    memory becomes team scratch; warp intrinsics have Kokkos equivalents but
+    differ in API. For the same mid-sized code, plan weeks. Future targets
+    (HIP, SYCL, new NVIDIA archs) are then free — rebuild with a different flag.
+    Key assumptions that drive the answer: (1) how many future retargets are
+    anticipated — one more → hipify wins; three or more over five years → Kokkos
+    likely pays off; (2) how heavily does the code use shared memory or warp
+    intrinsics — light use → Kokkos port is mechanical; heavy use → expect
+    significant restructuring; (3) how complete is your test suite — both paths
+    require confident verification that the rewritten code produces identical
+    results.
+
 ---
 
 ## References

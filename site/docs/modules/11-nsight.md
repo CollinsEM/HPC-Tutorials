@@ -133,6 +133,56 @@ GPU profiling needs a GPU node, and Nsight Compute needs access to GPU performan
 
 4. Occupancy for the triad kernel is moderate, yet it achieves near-peak bandwidth. Why is chasing higher occupancy pointless for this kernel, and for what kind of kernel *would* raising occupancy help?
 
+??? "Show solutions"
+    **Question 1**: Two concrete changes to cut transfer cost:
+    (1) **Pinned (page-locked) host memory** — allocate with `cudaMallocHost`
+    instead of `malloc`. Pinned memory enables direct DMA transfers at full PCIe
+    bandwidth (~16–32 GB/s) rather than routing through a staging buffer; typical
+    speedup is 2–3× on transfer time alone.
+    (2) **CUDA streams with double-buffering** — split the data into chunks and
+    overlap a transfer of chunk $k+1$ with computation on chunk $k$ using two
+    streams. When the kernel is faster than the transfer (as here, 20×), the
+    transfers become the critical path; overlap hides most of their latency.
+
+    Optimizing the kernel is wasted effort because the kernel accounts for only
+    $1/(1+20) \approx 5\%$ of total wall time. Making the kernel infinitely fast
+    saves at most 5%. The roofline confirms the kernel itself is already
+    near-peak-bandwidth for its arithmetic intensity; the bottleneck is the PCIe
+    bus, not GPU compute.
+
+    **Question 2**: This kernel is **well-optimized** for what it is. The Stream
+    Triad has arithmetic intensity ≈ 0.06 FLOP/byte, placing it firmly on the
+    bandwidth-bound side of the roofline. At 90% of peak memory throughput, the
+    kernel is achieving nearly the maximum the hardware can deliver for this
+    algorithm. The 3% compute utilization is expected and correct — the FPUs are
+    idle most of the time waiting for memory, not because the kernel is written
+    badly, but because the algorithm is inherently data-starved. A "well-optimized"
+    bandwidth-bound kernel *should* show high memory utilization and low compute
+    utilization; that is the roofline prediction confirmed by measurement.
+
+    **Question 3**: Nsight Systems adds negligible overhead (1–5%) to the
+    whole program and shows a timeline of every kernel, transfer, and CPU call.
+    From this you identify the one or two kernels that dominate runtime — often
+    less than 5% of kernels account for 95% of GPU time. Only those hot kernels
+    are worth profiling with Nsight Compute, which adds 20–100× overhead per
+    kernel and generates hundreds of counters. Profiling every kernel with `ncu`
+    from the start would slow the program by orders of magnitude, produce vast
+    amounts of data to sift through, and spend most of the effort on kernels that
+    contribute nothing measurable to wall time. The top-down workflow matches
+    effort to impact.
+
+    **Question 4**: Occupancy is the fraction of the SM's maximum warps that are
+    active. For a bandwidth-bound kernel like the triad, the bottleneck is how fast
+    data can be delivered from DRAM — not how many warps are scheduled. Once there
+    are enough active warps to keep the memory bus fully utilized (typically 4–8
+    warps per SM is sufficient for high-bandwidth streaming), additional warps add
+    no benefit because the memory controller is already saturated. Higher occupancy
+    helps kernels that are **latency-bound** or **compute-bound**: latency-bound
+    kernels (e.g., irregular sparse access, texture fetches) use more warps to hide
+    stall cycles; compute-bound kernels use more warps to keep FPUs busy during
+    long-latency instructions. For the triad, extra warps are just more threads
+    waiting in the same memory queue.
+
 ---
 
 ## References

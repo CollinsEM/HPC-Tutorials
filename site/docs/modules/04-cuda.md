@@ -313,6 +313,36 @@ or the GPU spec sheet).
 3. Data transfer time dominates total runtime. Propose a strategy to reduce it.
    (Hint: think about which arrays actually change between loop iterations.)
 
+??? "Show solutions"
+    **Question 1**: `gridsize = n / blocksize` (integer division, no ceiling) leaves
+    the last partial block unscheduled. If $n$ is not divisible by `blocksize`, the
+    final $n \bmod \text{blocksize}$ elements never receive a thread and retain their
+    initial value in `c` (zero). The verification loop at the bottom of `main` would
+    catch these as errors. The kernel's `if (i >= n) return` guard prevents
+    out-of-bounds reads, but without enough blocks those indices are simply never
+    reached. The standard ceiling formula `(n + blocksize - 1) / blocksize` ensures
+    a partial block is always launched, and the guard discards the excess threads in
+    that block.
+
+    **Question 2**: Experiment-dependent; numbers vary by GPU. For the Stream Triad
+    (a bandwidth-bound kernel), you should see roughly similar kernel times across
+    128, 256, and 512 threads per block once occupancy is sufficient to hide memory
+    latency — typically 4–8 active warps per SM is enough. Very small blocks (32
+    threads) may show slower performance because there are too few in-flight warps
+    to cover memory latency. 1024 threads per block may also slow slightly on older
+    GPUs due to register file pressure limiting the number of concurrent blocks.
+    The occupancy calculator in Nsight Compute (or `nvcc --resource-usage`) gives
+    exact limits for your architecture.
+
+    **Question 3**: Arrays `a` and `b` are initialized once before the timing loop
+    and never modified by the kernel. Only `c` changes each iteration. The transfer
+    strategy: copy `a` and `b` to the device **once** before the loop begins; copy
+    `c` back to the host **once** after the last iteration (or inside the loop only
+    for verification). This eliminates $2 \times \text{NTIMES}$ host-to-device
+    transfers of `a` and `b` — 32 copies of 640 MB each — reducing transfer
+    overhead from $3 \times \text{NTIMES}$ copies to $3$ total. For the 16-iteration
+    timing loop this is a 16× reduction in data-transfer volume for the inputs.
+
 ---
 
 ## 7. A Compute-Bound Kernel: Matrix Multiplication
@@ -444,6 +474,40 @@ Extensions to explore:
 3. The naive kernel re-reads $A$ and $B$ from global memory $N$ times. Estimate the
    total global-memory traffic with and without perfect reuse, and relate the two
    numbers to the arithmetic intensities quoted above.
+
+??? "Show solutions"
+    **Question 1**: Both kernels run on the same GPU but are limited by different
+    hardware resources. The Stream Triad reads 24 bytes and writes 8 bytes per
+    2 FLOPs: arithmetic intensity ≈ 0.06 FLOP/byte. It sits on the left
+    (bandwidth-limited) side of the roofline. Adding more FPUs does nothing —
+    the GPU is waiting on memory, not arithmetic. Dense matrix multiply (with
+    tiling and reuse) has intensity $I \approx N/12$ FLOP/byte, placing it on
+    the right (compute-limited) side. Adding more FPUs directly increases
+    throughput. The same hardware delivers fundamentally different performance
+    curves for the two kernels because they are limited by different physical
+    ceilings.
+
+    **Question 2**: The maximum threads per block is 1024 on all current NVIDIA
+    GPUs. Two hardware resources constrain how many blocks fit simultaneously on
+    one SM: **registers** (each SM has 65,536; 1024 threads × 32 registers/thread
+    = 32,768 per block, so only 2 blocks per SM) and **shared memory** (each SM
+    has 96–228 KB depending on architecture; if each block requests more than half,
+    only 1 block fits). The occupancy — active warps / maximum warps — drops when
+    either resource is exhausted. Adding shared memory per block directly trades
+    occupancy for data reuse, which is the tiling trade-off. Nsight Compute's
+    *Occupancy* section shows which resource is the binding constraint.
+
+    **Question 3**: Let $N = 1024$. With **perfect reuse** (each element read once
+    from global memory): reads of $A$ and $B$ = $2N^2 \times 8$ bytes $= 16$ MB;
+    writes of $C$ = $N^2 \times 8$ bytes $= 8$ MB; total = 24 MB.
+    Arithmetic intensity = $2N^3 / 24\text{ MB} \approx 85$ FLOP/byte.
+    For the **naive kernel** (no reuse): each of the $N^2$ output threads reads
+    one full row of $A$ ($N$ doubles) and one full column of $B$ ($N$ doubles),
+    so total reads = $2N^3 \times 8$ bytes $= 2 \times 1024^3 \times 8 \approx
+    16$ GB. Arithmetic intensity = $2N^3 / 16\text{ GB} = 1/8$ FLOP/byte.
+    This matches the "~1/8 FLOP/byte" noted in the text and explains why the naive
+    kernel is memory-bound despite the algorithm being compute-bound at the
+    theoretical level.
 
 ---
 

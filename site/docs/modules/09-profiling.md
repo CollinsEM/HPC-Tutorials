@@ -168,6 +168,47 @@ Profile the Stream Triad from [Module 2](02-autovec.md) and locate it on the roo
 
 4. A kernel sits exactly on the ridge point of your roofline. You move from single to double precision. Which way does its arithmetic intensity shift, and does that make it more compute- or more bandwidth-bound?
 
+??? "Show solutions"
+    **Question 1**: Let total runtime = 1.0 (normalized). Function $A$ = 0.70,
+    function $B$ = 0.30.
+
+    - *Make $A$ 2×*: new time $= 0.70/2 + 0.30 = 0.35 + 0.30 = 0.65$.
+      Speedup $= 1/0.65 \approx 1.54\times$.
+    - *Make $B$ 10×*: new time $= 0.70 + 0.30/10 = 0.70 + 0.03 = 0.73$.
+      Speedup $= 1/0.73 \approx 1.37\times$.
+
+    Making $A$ 2× gives the larger speedup. The counter-intuitive lesson is that
+    **the dominant fraction matters more than the improvement factor**. A modest
+    2× on the 70% hotspot beats a dramatic 10× on the 30% minor function.
+    In Amdahl's form: $\text{Speedup} = 1 / ((1 - f) + f/k)$, where $f$ is the
+    improved fraction and $k$ is the speedup factor within it.
+
+    **Question 2**: At 85% of peak bandwidth there is only 15% headroom left on
+    a single core. The next step is to run LIKWID's `MEM` group with increasing
+    thread counts and find the thread count at which bandwidth saturates. If even
+    4 threads saturate the memory controller, adding cores helps only while you are
+    below that saturation point — beyond it, you have reached the hardware ceiling
+    and multithreading adds no more throughput. If bandwidth is still climbing with
+    thread count, more threads are the right lever.
+
+    **Question 3**: Both observations can be simultaneously true because the
+    hardware prefetcher hides L1 miss latency for regular (stride-1 or stride-$k$)
+    access patterns. The prefetcher issues read-ahead requests before the CPU
+    actually demands the data. By the time a thread reaches a cache line, it is
+    already in L2 or L3, so the miss is *counted* but not *stalled*. LIKWID's
+    bandwidth counter measures actual bytes crossing the memory bus, which is near
+    peak because the prefetcher keeps it busy. cachegrind's simulator counts
+    misses but does not model whether the miss was hiding behind in-flight
+    prefetches or causing a real stall.
+
+    **Question 4**: Moving from FP32 to FP64 doubles the bytes per element (4 → 8)
+    while leaving FLOPs per element unchanged. Arithmetic intensity = FLOPs / bytes
+    → intensity **halves**, shifting the kernel **left** on the roofline into the
+    bandwidth-bound region. Additionally, most consumer GPUs have 1/32 to 1/64 of
+    the FP64 throughput they have for FP32, which also lowers the compute ceiling —
+    the ridge point itself moves left. A kernel at the ridge point in FP32 can
+    become deeply bandwidth-bound in FP64 from both effects simultaneously.
+
 ---
 
 ## References

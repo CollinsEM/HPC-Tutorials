@@ -282,6 +282,34 @@ reported by LIKWID and to the theoretical peak for your system.
    whether the compiler report changes. (The static arrays in this example
    cannot actually alias, but the compiler does not always know that.)
 
+??? "Show solutions"
+    **Question 1**: The Stream Triad performs 2 FLOPs (one multiply, one add)
+    while reading 24 bytes and writing 8 bytes (arrays `a`, `b`, `c` of doubles)
+    — 32 bytes total per element. Arithmetic intensity = 2 / 32 = 0.0625 FLOP/byte,
+    or roughly 1/16. On any modern processor this sits far to the *left* of the
+    ridge point on the roofline, firmly in the **bandwidth-bound** regime. No
+    amount of extra FLOPs/s helps; the bottleneck is how fast data can move
+    through the memory hierarchy.
+
+    **Question 2**: Experiment-dependent; your numbers will vary by CPU. Vectorization
+    typically yields a 1.5–3× improvement for a bandwidth-bound loop like this,
+    less than the theoretical SIMD width (4× for AVX with 256-bit registers, 8×
+    for AVX-512) because the loop is limited by memory bandwidth, not instruction
+    throughput. The compiler report (`-fopt-info-vec-optimized`) should include a
+    line such as `stream_triad.c:NN: note: loop vectorized`. If it does not appear,
+    check for aliasing warnings (see Question 3) or missing `-O2`/`-O3`.
+
+    **Question 3**: Without `restrict`, the compiler must assume `a`, `b`, and `c`
+    could point to overlapping memory. Writing to `c[i]` might change the value of
+    `a[i+1]` on the next iteration, which would make it unsafe to reorder or batch
+    loads into a SIMD vector. This forces scalar execution or limits the compiler
+    to narrower vectorization windows. Adding `__restrict__` (GCC/Clang) or
+    `restrict` (C99) tells the compiler the pointers are disjoint; the vectorization
+    report typically changes from "not vectorized: possible aliasing" to "loop
+    vectorized." For the static arrays in this example the compiler can often prove
+    non-aliasing on its own, but for pointer arguments to functions it generally
+    cannot without the annotation.
+
 ---
 
 ## References

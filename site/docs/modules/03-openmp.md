@@ -443,6 +443,49 @@ shares the memory subsystem, so memory-bound loops gain little from it.
    row-major indexing (`data[i * NumFeatures + j]`) affect [cache behavior](01-hardware.md) and
    SIMD auto-vectorization?
 
+??? "Show solutions"
+    **Question 1**: The `#pragma omp parallel for` belongs on the **innermost**
+    loop — the patient loop over `i` ($10^6$ iterations). With $10^6$ iterations
+    divided across $T$ threads, each thread processes ~100,000 patients, giving
+    ample work to amortize the thread-launch overhead. The inner loop accumulates
+    into a thread-local `sum` (or a `reduction(+:sum)` clause), so there is no
+    race on the output.
+
+    Placing the pragma on the **outer feature loop** ($j_1 \in [0,10)$) gives only
+    10 outer iterations. With 8 or 16 threads, several threads sit idle, and the
+    total parallel work — 100 feature pairs × 10^6 patients — is divided so coarsely
+    that most threads handle one or zero outer iterations. The result is near-serial
+    performance with thread-launch overhead added.
+
+    **Question 2**: Open-ended; your numbers will vary. Two separate ceilings are
+    at work. Amdahl's Law identifies the serial fraction: `generate_data`,
+    the print statements, and any serial coordination between parallel regions form
+    a fixed overhead. If those account for even 5% of runtime, the theoretical
+    maximum speedup is 20×, regardless of thread count. Separately, the inner
+    loops stream ~8 MB of patient data per feature per pass. Memory bandwidth
+    on a single socket saturates at roughly 2–8 threads depending on the processor
+    (additional threads add cores but cannot increase bandwidth beyond the memory
+    controller's limit). You should see roughly linear scaling up to the point where
+    DRAM bandwidth saturates, then a flat plateau even as more threads are added.
+    The LIKWID `MEM` performance group can show when you have reached the bandwidth
+    ceiling.
+
+    **Question 3**: With `vector<vector<double>>`, each `data[i]` is a separately
+    heap-allocated `vector<double>` at an arbitrary address. Accessing `data[i][j]`
+    for varying `i` (fixed `j`) follows a pointer chain for every element and touches
+    a potentially different cache line per patient — poor spatial locality and no
+    opportunity for SIMD gather avoidance. The compiler cannot generally prove the
+    inner pointers are contiguous, so it cannot emit a vectorized strided load.
+
+    A flat `double data[NumPatients * NumFeatures]` with row-major indexing
+    `data[i * NumFeatures + j]` eliminates pointer chasing and puts all data in one
+    contiguous block, reducing TLB pressure. For fixed `j`, the access stride is
+    `NumFeatures * sizeof(double)` = 80 bytes — still not stride-1, so the prefetcher
+    still works harder than it would for column-major. The real win is predictable
+    layout and no indirection. A column-major layout (`data[j * NumPatients + i]`)
+    would make column-wise inner loops stride-1 and fully vectorizable, at the cost
+    of non-contiguous row access during data generation.
+
 ---
 
 ## References

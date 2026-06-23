@@ -170,6 +170,55 @@ ms_print massif.out.<pid>
 
 4. You have a wrong-answer bug that only appears with 8 threads, never with 1. Which Valgrind tool do you reach for, and why would memcheck alone not find it?
 
+??? "Show solutions"
+    **Question 1**: "Still reachable" means the allocations are still pointed to
+    by live pointers at program exit — they are not lost, just never explicitly
+    freed. The Stream Triad's three arrays ($3 \times 80\,\text{M} \times 8\,\text{bytes}
+    = 1.92\,\text{GB}$... actually $3 \times 80\,000\,000 \times 8 = 1,920,000,000$
+    bytes, but the question says 19,200,000 which corresponds to smaller example
+    arrays) simply fall out of scope at `return 0`. The OS reclaims all process
+    memory on exit regardless. "Still reachable" is not a leak — no data has been
+    lost and there is no memory corruption. It is not worth fixing unless the code
+    runs as a long-lived server where memory growth would accumulate, or security
+    policy requires zeroing sensitive data before deallocation. "Definitely lost"
+    (no pointer to the block exists anywhere) is the category that warrants
+    immediate attention.
+
+    **Question 2**: `-g` embeds DWARF debugging information — source file names,
+    line numbers, function names — that Valgrind uses to produce human-readable
+    stack traces. Without it, you get only raw memory addresses. `-O0` disables
+    all optimization, which sometimes hides bugs that only manifest under
+    optimization (register allocation, loop transforms, inlining can expose or
+    obscure memory errors). `-O3` enables aggressive inlining and loop transforms
+    that can produce confusing stack traces, eliminate source-level variables
+    (they become registers), and change memory-access patterns enough to alter
+    which errors Valgrind detects. `-O1` is the pragmatic middle ground: enough
+    optimization to reproduce most real-world bugs, while preserving most
+    debug structure and keeping stack traces readable.
+
+    **Question 3**: First, examine the full stack trace. If the flagged race is
+    *entirely inside* OpenMP runtime code (e.g., inside `libgomp.so`) with none
+    of your code in the trace, it is almost certainly a known benign pattern:
+    OpenMP runtimes use lock-free work-stealing or lazy initialization that
+    appears as a race to a happens-before detector but is deliberately correct.
+    You can confirm by checking helgrind's suppression file for known OpenMP
+    suppressions (`--gen-suppressions=all` generates a suppressions entry you
+    can add to `~/.valgrind.supp`). If *your* code appears anywhere in the
+    trace — even in a function that calls an OpenMP routine — investigate as a
+    real bug. Either way, never silently suppress a warning without understanding
+    whether your code is in the call path.
+
+    **Question 4**: Reach for **helgrind** (or DRD — Data Race Detector). A
+    wrong-answer bug that appears only with multiple threads is almost certainly
+    a **data race**: two threads read and write the same memory location without
+    proper synchronization, producing a result that depends on scheduling order.
+    memcheck detects memory errors — reads from uninitialized memory, out-of-bounds
+    accesses, invalid frees. A race that writes the correct type to the correct
+    address is invisible to memcheck; the write is well-typed and in-bounds. helgrind
+    specifically tracks lock-acquisition history and detects when two threads
+    access the same location concurrently without a consistent lock order or
+    happens-before relationship.
+
 ---
 
 ## References

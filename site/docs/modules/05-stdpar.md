@@ -229,6 +229,45 @@ placement and transfer timing than explicit CUDA.
 3. When would you choose explicit CUDA over `std::par` even if both produce correct
    results? Name at least two scenarios where the extra complexity is justified.
 
+??? "Show solutions"
+    **Question 1**: `par_unseq` outperforms `par` when loop bodies are
+    **SIMD-vectorizable**: simple arithmetic on independent elements, no function
+    calls that break vectorization, no data dependencies across iterations.
+    The implementation can then issue wide vector instructions inside each thread
+    in addition to threading across cores. It may perform *worse* when loop bodies
+    contain non-vectorizable code (pointer-based conditionals, calls to non-inlinable
+    functions), because `par_unseq` forbids synchronization within the algorithm
+    body — so patterns that need per-thread reductions or local state require extra
+    care, and the implementation may fall back to scalar code anyway.
+
+    **Question 2**: Unified Memory migrates pages on demand via CPU page faults.
+    On the **first** kernel call, every page of the arrays is faulted in from the
+    host — this adds significant latency (hundreds of microseconds for large arrays)
+    that explicit `cudaMemcpy` avoids by doing a bulk DMA transfer upfront.
+    **Peak bandwidth** is similar once the pages are resident on the GPU (both
+    paths use the same PCIe bus), but Unified Memory's page-fault overhead means
+    the effective first-call bandwidth is much lower. For repeated kernel launches
+    on the same data, Unified Memory pages already on the GPU are reused at device
+    memory speed. Explicit `cudaMemcpy` is predictable and easier to profile;
+    Unified Memory is more convenient but harder to reason about when debugging
+    performance.
+
+    **Question 3**: Open-ended; strong answers include at least two of:
+    (1) **Shared memory or warp-level primitives** — `__syncthreads`, shuffle
+    instructions, and on-chip shared memory are CUDA-specific and have no
+    `std::par` equivalent. Any kernel that requires tiled matrix multiply or
+    prefix scans within a warp must be written in CUDA.
+    (2) **CUDA streams for overlapping compute and transfer** — `std::par` does
+    not expose streams; you cannot hide PCIe transfers behind kernel computation.
+    When transfer time dominates (as in the triad), explicit overlap using two
+    streams can cut wall time nearly in half.
+    (3) **Multi-GPU or MPS** — directing work to specific devices, managing
+    peer-to-peer transfers, or using Multi-Process Service requires CUDA device
+    management APIs that `std::par` does not expose.
+    (4) **Fine-grained performance tuning** — occupancy, register capping, L1/L2
+    cache configuration, and kernel launch bounds are CUDA pragmas and intrinsics
+    with no `std::par` equivalent.
+
 ---
 
 ## References

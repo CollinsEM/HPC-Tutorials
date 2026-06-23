@@ -289,6 +289,61 @@ Look at the **distribution time versus computation time**. For this problem the 
 
 5. A production code would overlap communication and computation using the non-blocking pattern from Example 2. In the matrix-vector multiply, what work could a process do *while* its matrix rows are still arriving?
 
+??? "Show solutions"
+    **Question 1**: MPI implementations use an *eager* protocol for small messages
+    (typically up to 8–64 KB, configurable): the sender copies the payload into
+    an MPI-managed buffer and returns immediately, without waiting for the receiver
+    to post its `MPI_Recv`. With `count = 10` (80 bytes), both processes queue their
+    messages in eager buffers and then post their receives — no deadlock. With
+    `count = 100,000` (800 KB), the message exceeds the eager limit and MPI switches
+    to the *rendezvous* protocol: the sender blocks until the receiver signals it is
+    ready, then they coordinate the transfer. If both ranks call `MPI_Send` before
+    either calls `MPI_Recv`, each is waiting for the other to receive — deadlock.
+    This is a latent bug because the eager threshold is an implementation detail
+    that varies across Open MPI versions, MPICH configurations, and network
+    fabrics. Code that "works" today with one MPI installation may deadlock after
+    a version upgrade or when run on a different cluster.
+
+    **Question 2**: Row distribution: each rank holds $\lfloor N/P \rfloor$ rows of
+    $A$ and computes the corresponding elements of $y = Ax$. The vector $x$ must be
+    broadcast to all ranks (one `MPI_Bcast`), and the partial $y$ segments are
+    collected with `MPI_Gather`. Column distribution: each rank holds $\lfloor N/P
+    \rfloor$ columns of $A$ and the matching segment of $x$. Each rank produces a
+    full-length partial sum (its columns' contribution to every $y_i$), and these
+    must be summed across all ranks with `MPI_Allreduce`. Row distribution is
+    generally preferred: `MPI_Bcast` is cheaper than `MPI_Allreduce` (one root
+    broadcasts vs. all-to-all reduction), and the local computation is embarrassingly
+    independent — no cross-rank dependencies until the gather.
+
+    **Question 3**: `MPI_Scatterv` takes two extra arrays compared to `MPI_Scatter`:
+    `sendcounts[P]` (the number of elements sent to each rank) and `displs[P]` (the
+    offset into the send buffer where each rank's data starts). For $N$ rows and $P$
+    ranks with $r = N \bmod P$: ranks $0, \ldots, r-1$ receive $\lceil N/P \rceil$
+    rows; ranks $r, \ldots, P-1$ receive $\lfloor N/P \rfloor$ rows.
+    The displacement array is the prefix sum of `sendcounts`:
+    `displs[0] = 0`, `displs[k] = displs[k-1] + sendcounts[k-1]`.
+
+    **Question 4**: When the rank count doubles from $P$ to $2P$, each rank's
+    computation halves (from $N/P$ to $N/2P$ rows), so *computation time* scales as
+    $1/P$ — ideal strong scaling. *Distribution time* is dominated by the root
+    sending $N$ rows total to $2P$ destinations; with a tree-based broadcast the
+    latency grows as $O(\log P)$, so it increases slightly. Adding ranks stops
+    helping when distribution and communication time (which grow or hold steady)
+    match computation time (which shrinks). Beyond that crossover point,
+    half the wall time is spent communicating and the parallel efficiency drops
+    below 50%.
+
+    **Question 5**: In a row-distributed matrix-vector multiply, once rank $k$ has
+    received its rows it can immediately begin computing the dot products $y_k =
+    A_k \cdot x$ — this work is entirely independent of what other ranks are doing.
+    With non-blocking collectives (`MPI_Ibcast` for the vector, `MPI_Iscatter` for
+    the rows), the rank can post the receives, then compute on any rows or vector
+    elements it already holds in its local buffer, then call `MPI_Waitall` only
+    when it actually needs the data that is still in flight. In practice, a
+    double-buffered scheme splits the matrix into two tiles: while the GPU (or CPU)
+    computes the first tile, the second tile's data arrives via DMA, hiding
+    communication latency behind useful work.
+
 ---
 
 ## References

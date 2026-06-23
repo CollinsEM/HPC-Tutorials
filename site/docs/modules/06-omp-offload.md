@@ -212,6 +212,54 @@ The reported runtime includes the data mapping (host↔device transfer), which �
 
 4. The same OpenMP-offload binary runs on a machine with no GPU by executing `target` regions on the host. What does this portability cost you, and when is it worth it?
 
+??? "Show solutions"
+    **Question 1**: When a single `target` region holds multiple kernels,
+    a `target data` region maps the arrays to the device *once* before all the
+    kernels run and unmaps them *once* at the end. Without `target data`, each
+    individual `target` region would independently copy the arrays across PCIe —
+    $k$ kernels would incur $2k$ transfers instead of 2. Since [Module 4](04-cuda.md)
+    showed that transfer time dominates the runtime of a memory-bound kernel,
+    reducing transfers from $2k$ to 2 is the single most important optimization
+    available. `target data` is the OpenMP-offload analogue of keeping data on
+    the device between launches.
+
+    **Question 2**: `target teams distribute parallel for` launches a *league* of
+    teams; `teams distribute` partitions iterations across all teams, so all of
+    the GPU's streaming multiprocessors (thread blocks) receive work. Dropping
+    `teams distribute` and writing only `target parallel for` constrains the
+    loop to run within **one team** — one thread block — leaving the other SMs
+    idle. For a 80 M-element loop with 1024 threads per block, the serial work
+    becomes 78,125 serial passes through a single block instead of a single
+    parallel pass across thousands of blocks. Performance degrades to approximately
+    single-SM throughput.
+
+    **Question 3**: Open-ended; strong answers match this pattern:
+    - *Lines of code changed from serial*: `std::par` wins — one execution policy
+      argument. OpenMP offload requires 2–4 pragma lines plus `map` clauses.
+      CUDA requires replacing the loop with a kernel function, adding
+      `cudaMalloc`/`cudaMemcpy`, and writing the launch configuration.
+    - *Control over data movement*: CUDA gives full explicit control (you decide
+      exactly when each transfer happens). OpenMP offload gives declarative control
+      (`map` clauses). `std::par` delegates all data movement to Unified Memory.
+    - *Portability*: `std::par` is a C++ standard (portable across compilers and
+      vendors). OpenMP offload is supported by GCC, Clang, and NVHPC for NVIDIA,
+      AMD, and Intel targets. CUDA is NVIDIA-only.
+    - *When to reach for each*: CUDA for maximum control on NVIDIA hardware; OpenMP
+      offload for existing CPU-parallel codebases that need GPU acceleration with
+      minimal restructuring; `std::par` for clean C++ code where the compiler can
+      manage data and the algorithm fits a standard library pattern.
+
+    **Question 4**: The fallback cost is primarily **performance** on host:
+    the `teams distribute parallel for` directive is translated differently on the
+    host — the offload runtime may serialize across teams or spawn fewer threads
+    than a native `#pragma omp parallel for` would. In the worst case the host
+    fallback runs slower than a hand-written CPU version would. The cost is also
+    **testability risk** — behaviors that differ between host and device execution
+    (undefined order of operations, floating-point rounding) may mask GPU-specific
+    bugs during CPU testing. It is worth it when: deployment targets are
+    heterogeneous (some nodes have GPUs, some do not), the same binary must run
+    correctly on both, and you cannot afford to maintain separate CPU and GPU builds.
+
 ---
 
 ## References
