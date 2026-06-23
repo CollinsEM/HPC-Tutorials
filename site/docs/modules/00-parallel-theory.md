@@ -227,9 +227,8 @@ A workload maps well to a GPU when:
   affecting correctness (no loop-carried dependencies).
 - **Threads are independent and thread-safe**: no shared mutable state that
   requires synchronization across threads.
-- **Memory access is contiguous**: threads in a warp access adjacent addresses
-  (coalesced access). Random access causes one memory transaction per thread
-  rather than one per warp.
+- **Memory access is contiguous**: threads in a warp access adjacent
+  addresses (coalesced access). 
 - **Thread divergence is low**: all threads in a warp follow the same control
   flow path. Divergent branches serialize within the warp.
 - **Arithmetic intensity is moderate to high**: enough floating-point work per
@@ -247,6 +246,24 @@ A workload maps well to a GPU when:
 | Small datasets | PCIe transfer overhead dominates compute time |
 
 !!! warning
+
+    If the per-thread memory access pattern is random, then
+    each thread could potentially request data from many different
+    memory locations. This will often generate multiple non-coalesced
+    memory accesses per warp, wasting cache-line reads and forcing the
+    entire warp to block until all reads are completed.
+    
+!!! warning
+
+    Thread divergence occurs when threads within the same warp take 
+    different flow control paths in the kernel -- usually due to a logical
+    switch statement such as `if` / `else`. Since all of the threads in a warp
+    share the same instruction cache, threads will be split into multiple
+    groups based on which branch of the logical switch they satisfy. Each 
+    group then runs the code in its branch while the other remain idle.
+
+!!! warning
+
     Moving data to and from the GPU over PCIe costs roughly 10–15 GB/s. If your
     kernel takes less time than the data transfer, you have made the code slower,
     not faster. Profile the transfer cost before porting to GPU.
