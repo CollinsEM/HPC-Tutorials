@@ -1,0 +1,1658 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A hands-on tutorial covering parallel programming models and best practices for high-performance computing on workstations and SLURM clusters.
+">
+      
+      
+      
+        <link rel="canonical" href="https://CollinsEM.github.io/HPC-Tutorials/modules/09-profiling/">
+      
+      
+        <link rel="prev" href="../08-kokkos/">
+      
+      
+        <link rel="next" href="../10-valgrind/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/hpc2.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>9: Profiling & Performance Analysis - Parallel Programming for HPC — A Practical Guide</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Open Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#module-9-profiling-performance-analysis" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-header__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Parallel Programming for HPC — A Practical Guide
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              9: Profiling & Performance Analysis
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../00-parallel-theory/" class="md-tabs__link">
+          
+  
+  
+  Modules
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../running/workstation/" class="md-tabs__link">
+          
+  
+  
+  Running Code
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-nav__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    Parallel Programming for HPC — A Practical Guide
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modules
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-parallel-theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0: Parallel Computing Theory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-hardware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1: Hardware & Data Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-autovec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2: Auto-vectorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-openmp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3: OpenMP — CPU Parallelism
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-cuda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4: CUDA — GPU Programming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-stdpar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5: C++17 std::par
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-omp-offload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6: OpenMP Offload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-mpi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7: MPI — Distributed Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-kokkos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8: Kokkos & MATAR — Portability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9: Profiling & Performance Analysis
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9: Profiling & Performance Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#measure-dont-guess" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measure, Don't Guess
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#likwid-like-i-knew-what-im-doing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LIKWID — "Like I Knew What I'm Doing"
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LIKWID — &#34;Like I Knew What I&#39;m Doing&#34;">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inspect-the-machine-likwid-topology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inspect the machine: likwid-topology
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#measure-hardware-counters-likwid-perfctr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measure hardware counters: likwid-perfctr
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pin-threads-affinity-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pin threads: affinity matters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#instrument-a-region-the-marker-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instrument a region: the Marker API
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#valgrind-hotspots-caches-and-correctness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Valgrind — Hotspots, Caches, and Correctness
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-roofline-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Roofline Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-valgrind/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10: Valgrind — Memory & Threading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-nsight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11: GPU Profiling with Nsight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Code
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Running Code
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/workstation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a Workstation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/slurm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a SLURM Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#measure-dont-guess" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measure, Don't Guess
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#likwid-like-i-knew-what-im-doing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LIKWID — "Like I Knew What I'm Doing"
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LIKWID — &#34;Like I Knew What I&#39;m Doing&#34;">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inspect-the-machine-likwid-topology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inspect the machine: likwid-topology
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#measure-hardware-counters-likwid-perfctr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measure hardware counters: likwid-perfctr
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pin-threads-affinity-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pin threads: affinity matters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#instrument-a-region-the-marker-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instrument a region: the Marker API
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#valgrind-hotspots-caches-and-correctness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Valgrind — Hotspots, Caches, and Correctness
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-roofline-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Roofline Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="module-9-profiling-performance-analysis">Module 9: Profiling &amp; Performance Analysis<a class="headerlink" href="#module-9-profiling-performance-analysis" title="Permanent link">&para;</a></h1>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>By the end of this module you will be able to:</p>
+<ul>
+<li>Apply the "measure, don't guess" discipline and target the bottleneck that matters</li>
+<li>Inspect a machine's topology and bind threads to specific cores</li>
+<li>Measure achieved memory bandwidth and cache behavior with hardware counters or timing</li>
+<li>Find hotspots, cache misses, and memory errors with Valgrind</li>
+<li>Place a kernel on the roofline model and decide whether it is compute- or bandwidth-bound</li>
+</ul>
+<hr />
+<h2 id="measure-dont-guess">Measure, Don't Guess<a class="headerlink" href="#measure-dont-guess" title="Permanent link">&para;</a></h2>
+<p>The most common performance mistake is optimizing the wrong thing. <a href="../00-parallel-theory/">Amdahl's Law</a> is blunt about it: speeding up code that accounts for 5% of runtime can never give more than a 5% improvement, no matter how clever the optimization. Before you change anything, <strong>measure</strong> where time actually goes and <strong>what limits it</strong> — compute throughput, memory bandwidth, or latency.</p>
+<p>A disciplined workflow:</p>
+<ol>
+<li><strong>Time</strong> the whole program and its phases to find where the time is.</li>
+<li><strong>Profile</strong> the hot region to find <em>why</em> it is slow (counters, cache misses, call graph).</li>
+<li><strong>Classify</strong> the bottleneck with the roofline: compute-bound or bandwidth-bound?</li>
+<li><strong>Optimize</strong> the dominant cost.</li>
+<li><strong>Re-measure</strong> to confirm a real gain and catch regressions.</li>
+</ol>
+<p>This module covers two complementary tools — <a href="https://github.com/RRZE-HPC/likwid/wiki"><strong>LIKWID</strong></a> for hardware-counter and bandwidth analysis, <strong>Valgrind</strong> for hotspots, cache simulation, and memory correctness — and the <strong>roofline model</strong> that ties their numbers to a decision.</p>
+<div class="admonition note">
+<p class="admonition-title">Tools used here</p>
+<p>Neither LIKWID nor Valgrind is guaranteed to be installed; check before
+starting the assignment. The examples below profile <code>examples/autovec/stream_triad.c</code>
+from <a href="../02-autovec/">Module 2</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Availability</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LIKWID</td>
+<td>HPC clusters via <code>module load likwid</code>; self-install on workstations</td>
+<td>Hardware bandwidth/FLOP counters, topology, thread pinning</td>
+</tr>
+<tr>
+<td><code>perf</code></td>
+<td>Ships with the Linux kernel on most distros</td>
+<td>Hardware counters without LIKWID; needs <code>perf_event_paranoid ≤ 1</code></td>
+</tr>
+<tr>
+<td><code>lscpu</code> / <code>numactl</code></td>
+<td>Standard on nearly all Linux systems</td>
+<td>Topology inspection</td>
+</tr>
+<tr>
+<td><code>taskset</code> / <code>numactl</code></td>
+<td>Standard on nearly all Linux systems</td>
+<td>Thread pinning</td>
+</tr>
+<tr>
+<td>Valgrind</td>
+<td>Common on workstations; less common on clusters</td>
+<td>Simulated cache analysis, hotspot profiling, memory correctness</td>
+</tr>
+<tr>
+<td>Timing calculation</td>
+<td>Always available</td>
+<td>Bandwidth from reported runtime (see <a href="../02-autovec/">Module 2</a>)</td>
+</tr>
+</tbody>
+</table>
+<p>Where hardware counters are unavailable, the timing-based bandwidth calculation is a reliable substitute for the triad.</p>
+</div>
+<hr />
+<h2 id="likwid-like-i-knew-what-im-doing">LIKWID — "Like I Knew What I'm Doing"<a class="headerlink" href="#likwid-like-i-knew-what-im-doing" title="Permanent link">&para;</a></h2>
+<p>LIKWID is a lightweight command-line toolkit for performance measurement on CPUs. The pieces you will use most:</p>
+<div class="admonition note">
+<p class="admonition-title">If LIKWID is not installed</p>
+<p>Each LIKWID capability has a widely-available substitute:</p>
+<table>
+<thead>
+<tr>
+<th>LIKWID command</th>
+<th>Alternative</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>likwid-topology -g</code></td>
+<td><code>lscpu</code> (cache sizes, cores, NUMA); <code>numactl --hardware</code> (NUMA distances)</td>
+</tr>
+<tr>
+<td><code>likwid-perfctr -g MEM1</code></td>
+<td>Timing-based bandwidth (see <a href="../02-autovec/">Module 2</a>); or <code>perf stat -e LLC-loads,LLC-load-misses ./program</code></td>
+</tr>
+<tr>
+<td><code>likwid-perfctr -g FLOPS_DP</code></td>
+<td>Theoretical calculation from source; or <code>perf stat -e fp_arith_inst_retired.scalar_double ./program</code> (Intel)</td>
+</tr>
+<tr>
+<td><code>likwid-pin -c 0-7</code></td>
+<td><code>taskset -c 0-7 ./program</code>; or <code>OMP_PLACES=cores OMP_PROC_BIND=close</code> for OpenMP</td>
+</tr>
+<tr>
+<td>Marker API (region measurement)</td>
+<td>Wrap the region in your own <code>clock_gettime</code> calls</td>
+</tr>
+</tbody>
+</table>
+<p><code>perf</code> is part of the Linux kernel tools (<code>linux-tools-$(uname -r)</code> on Debian/Ubuntu) and is almost always available without administrator action once the <code>perf_event_paranoid</code> sysctl is set to 1 or lower (<code>cat /proc/sys/kernel/perf_event_paranoid</code>). On a cluster where you cannot change that setting, the timing-based approach requires no privileges at all.</p>
+</div>
+<h3 id="inspect-the-machine-likwid-topology">Inspect the machine: <code>likwid-topology</code><a class="headerlink" href="#inspect-the-machine-likwid-topology" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>likwid-topology<span class="w"> </span>-g
+</span></code></pre></div>
+<p>This prints the socket/core/cache layout and a graphical map of the cache hierarchy. You need it to interpret everything else — to know how big L1/L2/L3 are (so you know when an array spills to DRAM), how many physical cores exist, and how hyperthreads and NUMA domains are arranged.</p>
+<h3 id="measure-hardware-counters-likwid-perfctr">Measure hardware counters: <code>likwid-perfctr</code><a class="headerlink" href="#measure-hardware-counters-likwid-perfctr" title="Permanent link">&para;</a></h3>
+<p>List the available <em>performance groups</em> for your CPU:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>likwid-perfctr<span class="w"> </span>-a
+</span></code></pre></div>
+<p>Then run your program pinned to a core under a group. For a memory-bound kernel, the <code>MEM</code> (or <code>MEM1</code>) group reports achieved DRAM bandwidth:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>likwid-perfctr<span class="w"> </span>-C<span class="w"> </span><span class="m">0</span><span class="w"> </span>-g<span class="w"> </span>MEM1<span class="w"> </span>./stream_triad
+</span></code></pre></div>
+<ul>
+<li><code>-C 0</code> pins execution to core 0 (measurements are meaningless if the OS migrates the thread).</li>
+<li><code>-g MEM1</code> selects the memory-bandwidth counter group.</li>
+</ul>
+<p>The output reports bytes read/written and an achieved bandwidth in MB/s or GB/s. Compare that to your CPU's theoretical peak (from the spec sheet, or measured with the STREAM benchmark) — for the triad, you should be near peak if the loop vectorized and the prefetchers are keeping up.</p>
+<p>Other useful groups: <code>FLOPS_DP</code>/<code>FLOPS_SP</code> (floating-point rate, needed for the roofline), <code>L2</code>/<code>L3</code> (cache traffic), <code>BRANCH</code> (misprediction), <code>CLOCK</code> (effective frequency).</p>
+<h3 id="pin-threads-affinity-matters">Pin threads: affinity matters<a class="headerlink" href="#pin-threads-affinity-matters" title="Permanent link">&para;</a></h3>
+<p>For OpenMP code, <em>where</em> threads run dominates memory performance on NUMA systems. LIKWID can launch and pin a threaded run:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>likwid-pin<span class="w"> </span>-c<span class="w"> </span><span class="m">0</span>-7<span class="w"> </span>./vecadd<span class="w">          </span><span class="c1"># pin 8 threads to cores 0-7</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>likwid-perfctr<span class="w"> </span>-C<span class="w"> </span><span class="m">0</span>-7<span class="w"> </span>-g<span class="w"> </span>MEM<span class="w"> </span>./vecadd
+</span></code></pre></div>
+<p>Binding threads close to the memory they touch avoids cross-socket traffic — often a larger effect than any source change. This is the measurement behind the <code>OMP_PROC_BIND=close</code> hint from <a href="../03-openmp/">Module 3</a>.</p>
+<h3 id="instrument-a-region-the-marker-api">Instrument a region: the Marker API<a class="headerlink" href="#instrument-a-region-the-marker-api" title="Permanent link">&para;</a></h3>
+<p>To measure one region instead of the whole program, bracket it with LIKWID markers and compile with <code>-DLIKWID_PERFMON -llikwid</code>:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;likwid-marker.h&gt;</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">LIKWID_MARKER_INIT</span><span class="p">;</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">LIKWID_MARKER_START</span><span class="p">(</span><span class="s">&quot;triad&quot;</span><span class="p">);</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">scalar</span><span class="o">*</span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">LIKWID_MARKER_STOP</span><span class="p">(</span><span class="s">&quot;triad&quot;</span><span class="p">);</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">LIKWID_MARKER_CLOSE</span><span class="p">;</span>
+</span></code></pre></div>
+<p>Run with <code>likwid-perfctr -C 0 -g MEM1 -m ./stream_triad</code> (<code>-m</code> enables markers). This isolates the kernel from initialization and I/O.</p>
+<hr />
+<h2 id="valgrind-hotspots-caches-and-correctness">Valgrind — Hotspots, Caches, and Correctness<a class="headerlink" href="#valgrind-hotspots-caches-and-correctness" title="Permanent link">&para;</a></h2>
+<p>Where LIKWID reads real hardware counters, <strong>Valgrind</strong> runs your program on a synthetic CPU — slow, but needs no privileges and sees everything. It complements LIKWID along two axes: <code>callgrind</code> finds hotspots by instruction count, <code>cachegrind</code> simulates cache and branch behavior, and <code>memcheck</code>/<code>helgrind</code> catch the memory and threading bugs that often masquerade as performance mysteries (a heap overrun, an uninitialized accumulator, or the nondeterministic results of a data race like the <a href="../08-kokkos/">MATAR <code>FOR_ALL</code></a>).</p>
+<p>Valgrind has enough depth — and enough day-to-day importance for debugging — to warrant its own module: see <strong><a href="../10-valgrind/">Module 10: Valgrind</a></strong> for the full treatment of memcheck, helgrind/DRD, cachegrind, callgrind, and massif.</p>
+<div class="admonition note">
+<p class="admonition-title">CPU tools only</p>
+<p>LIKWID and Valgrind both analyze the <em>host CPU</em>. They cannot see inside a GPU kernel — for CUDA profiling use the Nsight tools in <strong><a href="../11-nsight/">Module 11</a></strong>.</p>
+</div>
+<hr />
+<h2 id="the-roofline-model">The Roofline Model<a class="headerlink" href="#the-roofline-model" title="Permanent link">&para;</a></h2>
+<p>The roofline (<a href="../02-autovec/">introduced in Module 2</a>) turns your measurements into a decision. It plots attainable performance against <strong>arithmetic intensity</strong> — FLOPs per byte of memory traffic:</p>
+<div class="arithmatex">\[\text{Attainable FLOP/s} = \min\!\left(\text{Peak FLOP/s},\; \text{Peak Bandwidth} \times \text{Arithmetic Intensity}\right)\]</div>
+<p>Two ceilings bound every kernel:</p>
+<ul>
+<li>a sloped <strong>bandwidth ceiling</strong> (<code>bandwidth × intensity</code>) on the left, and</li>
+<li>a flat <strong>compute ceiling</strong> (<code>peak FLOP/s</code>) on the right.</li>
+</ul>
+<p>The <strong>ridge point</strong> where they meet is the intensity above which a kernel can be compute-bound. Plot your kernel by its intensity:</p>
+<table>
+<thead>
+<tr>
+<th>Kernel</th>
+<th>FLOPs</th>
+<th>Bytes moved</th>
+<th>Intensity</th>
+<th>Regime</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stream Triad</td>
+<td><span class="arithmatex">\(2N\)</span></td>
+<td><span class="arithmatex">\(24N\)</span></td>
+<td><span class="arithmatex">\(\approx 0.08\)</span></td>
+<td>bandwidth-bound</td>
+</tr>
+<tr>
+<td>Dense matmul (<span class="arithmatex">\(N{=}1024\)</span>)</td>
+<td><span class="arithmatex">\(2N^3\)</span></td>
+<td><span class="arithmatex">\(\approx 24N^2\)</span></td>
+<td><span class="arithmatex">\(\approx N/12\)</span></td>
+<td>compute-bound</td>
+</tr>
+</tbody>
+</table>
+<p>This is why the <a href="../08-kokkos/">triad barely sped up on a GPU</a> while <a href="../08-kokkos/">matmul scaled dramatically</a>: they sit on opposite sides of the ridge. The roofline tells you which optimization is even <em>possible</em>:</p>
+<ul>
+<li><strong>Bandwidth-bound</strong> (left of ridge): reduce data movement — better layout, cache blocking, fusing loops, lower precision. Adding FLOP/s does nothing.</li>
+<li><strong>Compute-bound</strong> (right of ridge): use vector units and more cores/FPUs. Adding bandwidth does nothing.</li>
+</ul>
+<p>Tools like <strong>Intel Advisor</strong> generate a roofline automatically by measuring FLOPs and bytes; you can also build one by hand from LIKWID's <code>FLOPS_DP</code> and <code>MEM</code> groups.</p>
+<hr />
+<h2 id="assignment">Assignment<a class="headerlink" href="#assignment" title="Permanent link">&para;</a></h2>
+<p>Profile the Stream Triad from <a href="../02-autovec/">Module 2</a> and locate it on the roofline.</p>
+<ol>
+<li>
+<p><strong>Topology.</strong> Record your L1/L2/L3 sizes and physical core count. Is <code>STREAM_ARRAY_SIZE</code> (800000 doubles ≈ 6.4 MB) larger than your last-level cache? What does that imply about where the data lives?
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>lscpu<span class="w">                    </span><span class="c1"># always available</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>likwid-topology<span class="w"> </span>-g<span class="w">       </span><span class="c1"># richer view (if LIKWID is installed)</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>numactl<span class="w"> </span>--hardware<span class="w">       </span><span class="c1"># NUMA distances (if numactl is installed)</span>
+</span></code></pre></div></p>
+</li>
+<li>
+<p><strong>Bandwidth.</strong> Build the benchmark and measure achieved bandwidth. Compute the bandwidth from the printed runtime — <span class="arithmatex">\(3 \times 800000 \times 8\)</span> bytes per iteration divided by the per-iteration time in seconds. If LIKWID is available, cross-check with hardware counters:
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Timing-based (always available — compute from the printed runtime)</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>./stream_triad
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Hardware counters via LIKWID (if installed):</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>likwid-perfctr<span class="w"> </span>-C<span class="w"> </span><span class="m">0</span><span class="w"> </span>-g<span class="w"> </span>MEM1<span class="w"> </span>./stream_triad
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># Hardware counters via perf (if perf_event_paranoid ≤ 1):</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>perf<span class="w"> </span>stat<span class="w"> </span>-e<span class="w"> </span>LLC-loads,LLC-load-misses,cache-misses<span class="w"> </span>taskset<span class="w"> </span>-c<span class="w"> </span><span class="m">0</span><span class="w"> </span>./stream_triad
+</span></code></pre></div></p>
+</li>
+<li>
+<p><strong>Vectorization effect.</strong> Rebuild with the GCC vectorization flags enabled (from Module 2) and re-measure. Did achieved bandwidth move toward peak?</p>
+</li>
+<li>
+<p><strong>Call graph.</strong> Run under callgrind and confirm the triad loop dominates the instruction count:
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>valgrind<span class="w"> </span>--tool<span class="o">=</span>callgrind<span class="w"> </span>--callgrind-out-file<span class="o">=</span>callgrind.out<span class="w"> </span>./stream_triad
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>callgrind_annotate<span class="w"> </span>callgrind.out
+</span></code></pre></div></p>
+</li>
+<li>
+<p><strong>Roofline.</strong> Compute the triad's arithmetic intensity (≈ 0.08 FLOP/byte) and your machine's ridge point (peak FLOP/s ÷ peak bandwidth). Confirm the triad falls in the bandwidth-bound region, and explain why no amount of vectorization will push it past the bandwidth ceiling.</p>
+</li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title">Running LIKWID under SLURM</p>
+<p>Hardware counters need access that batch nodes sometimes restrict. The simplest approach is an interactive allocation: <code>salloc -N1 -n1 --exclusive</code>, then run the <code>likwid-perfctr</code> commands on the granted node. Request the node exclusively so no other job perturbs the counters.</p>
+</div>
+<hr />
+<h2 id="discussion-questions">Discussion Questions<a class="headerlink" href="#discussion-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>You profile a program and find it spends 70% of its time in function <code>A</code> and 30% in <code>B</code>. You can make <code>A</code> 2× faster or <code>B</code> 10× faster. Which gives the larger speedup? Work it out with Amdahl's Law.</p>
+</li>
+<li>
+<p>LIKWID reports your triad achieves 85% of peak memory bandwidth. Is there meaningful performance left to win on a single core? What would you measure next to decide whether to spend effort on multithreading instead?</p>
+</li>
+<li>
+<p>cachegrind says a loop has a 40% L1 miss rate, but LIKWID's hardware counters show the loop runs near peak bandwidth anyway. How can both be true? (Hint: hardware prefetchers.)</p>
+</li>
+<li>
+<p>A kernel sits exactly on the ridge point of your roofline. You move from single to double precision. Which way does its arithmetic intensity shift, and does that make it more compute- or more bandwidth-bound?</p>
+</li>
+</ol>
+<details>
+<summary>Show solutions</summary>
+<p><strong>Question 1</strong>: Let total runtime = 1.0 (normalized). Function <span class="arithmatex">\(A\)</span> = 0.70,
+function <span class="arithmatex">\(B\)</span> = 0.30.</p>
+<ul>
+<li><em>Make <span class="arithmatex">\(A\)</span> 2×</em>: new time <span class="arithmatex">\(= 0.70/2 + 0.30 = 0.35 + 0.30 = 0.65\)</span>.
+  Speedup <span class="arithmatex">\(= 1/0.65 \approx 1.54\times\)</span>.</li>
+<li><em>Make <span class="arithmatex">\(B\)</span> 10×</em>: new time <span class="arithmatex">\(= 0.70 + 0.30/10 = 0.70 + 0.03 = 0.73\)</span>.
+  Speedup <span class="arithmatex">\(= 1/0.73 \approx 1.37\times\)</span>.</li>
+</ul>
+<p>Making <span class="arithmatex">\(A\)</span> 2× gives the larger speedup. The counter-intuitive lesson is that
+<strong>the dominant fraction matters more than the improvement factor</strong>. A modest
+2× on the 70% hotspot beats a dramatic 10× on the 30% minor function.
+In Amdahl's form: <span class="arithmatex">\(\text{Speedup} = 1 / ((1 - f) + f/k)\)</span>, where <span class="arithmatex">\(f\)</span> is the
+improved fraction and <span class="arithmatex">\(k\)</span> is the speedup factor within it.</p>
+<p><strong>Question 2</strong>: At 85% of peak bandwidth there is only 15% headroom left on
+a single core. The next step is to measure bandwidth with increasing thread counts
+and find the point at which it saturates. With LIKWID: <code>likwid-perfctr -C 0-7 -g MEM1 ./vecadd</code>.
+Without LIKWID: set <code>OMP_NUM_THREADS=N</code> and compute bandwidth from the printed
+runtime at each <span class="arithmatex">\(N\)</span>. If even 4 threads saturate the memory controller, adding
+cores helps only while you are below that saturation point — beyond it, you have
+reached the hardware ceiling and multithreading adds no more throughput. If
+bandwidth is still climbing with thread count, more threads are the right lever.</p>
+<p><strong>Question 3</strong>: Both observations can be simultaneously true because the
+hardware prefetcher hides L1 miss latency for regular (stride-1 or stride-<span class="arithmatex">\(k\)</span>)
+access patterns. The prefetcher issues read-ahead requests before the CPU
+actually demands the data. By the time a thread reaches a cache line, it is
+already in L2 or L3, so the miss is <em>counted</em> but not <em>stalled</em>. LIKWID's
+bandwidth counter measures actual bytes crossing the memory bus, which is near
+peak because the prefetcher keeps it busy. cachegrind's simulator counts
+misses but does not model whether the miss was hiding behind in-flight
+prefetches or causing a real stall.</p>
+<p><strong>Question 4</strong>: Moving from FP32 to FP64 doubles the bytes per element (4 → 8)
+while leaving FLOPs per element unchanged. Arithmetic intensity = FLOPs / bytes
+→ intensity <strong>halves</strong>, shifting the kernel <strong>left</strong> on the roofline into the
+bandwidth-bound region. Additionally, most consumer GPUs have 1/32 to 1/64 of
+the FP64 throughput they have for FP32, which also lowers the compute ceiling —
+the ridge point itself moves left. A kernel at the ridge point in FP32 can
+become deeply bandwidth-bound in FP64 from both effects simultaneously.</p>
+</details>
+<hr />
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<h3 id="reference-materials">Reference materials<a class="headerlink" href="#reference-materials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://github.com/RRZE-HPC/likwid/wiki">LIKWID</a> — hardware-counter, topology, and thread-affinity tools.</li>
+<li><a href="https://perf.wiki.kernel.org/">perf wiki</a> — Linux kernel performance counters (<code>perf</code> command); covers <code>perf stat</code>, <code>perf record</code>, and <code>perf report</code>.</li>
+<li><a href="https://doi.org/10.1145/1498765.1498785">Roofline model</a> — Williams, Waterman &amp; Patterson, <em>Communications of the ACM</em>, 2009.</li>
+</ul>
+<p>For memory and threading correctness see <a href="../10-valgrind/">Module 10</a> (Valgrind); for GPU kernel profiling see <a href="../11-nsight/">Module 11</a> (Nsight).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../08-kokkos/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 8: Kokkos &amp; MATAR — Portability">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                8: Kokkos & MATAR — Portability
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../10-valgrind/" class="md-footer__link md-footer__link--next" aria-label="Next: 10: Valgrind — Memory &amp; Threading">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                10: Valgrind — Memory & Threading
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Developed at the High Performance Computing Collaboratory (HPC<sup>2</sup>), Mississippi State University — serving the University, State, and Nation through excellence in computational science and engineering.
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "content.code.annotate", "content.tabs.link", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

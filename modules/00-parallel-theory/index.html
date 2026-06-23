@@ -1,0 +1,2125 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A hands-on tutorial covering parallel programming models and best practices for high-performance computing on workstations and SLURM clusters.
+">
+      
+      
+      
+        <link rel="canonical" href="https://CollinsEM.github.io/HPC-Tutorials/modules/00-parallel-theory/">
+      
+      
+        <link rel="prev" href="../..">
+      
+      
+        <link rel="next" href="../01-hardware/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/hpc2.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>0: Parallel Computing Theory - Parallel Programming for HPC — A Practical Guide</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Open Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#module-0-parallel-computing-theory" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-header__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Parallel Programming for HPC — A Practical Guide
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              0: Parallel Computing Theory
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  Modules
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../running/workstation/" class="md-tabs__link">
+          
+  
+  
+  Running Code
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-nav__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    Parallel Programming for HPC — A Practical Guide
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modules
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0: Parallel Computing Theory
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0: Parallel Computing Theory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-parallelism-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Parallelism Matters
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why Parallelism Matters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-end-of-free-performance-gains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The End of "Free" Performance Gains
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-cost-of-writing-serial-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Cost of Writing Serial Code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#energy-cost-of-under-utilization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Energy Cost of Under-Utilization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amdahls-law-strong-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Amdahl's Law: Strong Scaling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Amdahl&#39;s Law: Strong Scaling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-formula" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Formula
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strong-scaling-curve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strong-Scaling Curve
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gustafson-barsiss-law-weak-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gustafson-Barsis's Law: Weak Scaling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gustafson-Barsis&#39;s Law: Weak Scaling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-insight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Insight
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#amdahl-vs-gustafson-barsis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Amdahl vs Gustafson-Barsis
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flynns-taxonomy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flynn's Taxonomy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Flynn&#39;s Taxonomy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sisd-single-instruction-single-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SISD — Single Instruction, Single Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simd-single-instruction-multiple-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SIMD — Single Instruction, Multiple Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#misd-multiple-instruction-single-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MISD — Multiple Instruction, Single Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mimd-multiple-instruction-multiple-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MIMD — Multiple Instruction, Multiple Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cpu-vs-gpu-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CPU vs GPU Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CPU vs GPU Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#design-philosophy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Philosophy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-a-gpu-is-a-good-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When a GPU Is a Good Fit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-a-gpu-is-a-poor-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When a GPU Is a Poor Fit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-performance-portability-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Performance Portability Problem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-hardware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1: Hardware & Data Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-autovec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2: Auto-vectorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-openmp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3: OpenMP — CPU Parallelism
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-cuda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4: CUDA — GPU Programming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-stdpar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5: C++17 std::par
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-omp-offload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6: OpenMP Offload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-mpi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7: MPI — Distributed Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-kokkos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8: Kokkos & MATAR — Portability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-profiling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9: Profiling & Performance Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-valgrind/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10: Valgrind — Memory & Threading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-nsight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11: GPU Profiling with Nsight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Code
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Running Code
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/workstation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a Workstation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/slurm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a SLURM Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-parallelism-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Parallelism Matters
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why Parallelism Matters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-end-of-free-performance-gains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The End of "Free" Performance Gains
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-cost-of-writing-serial-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Cost of Writing Serial Code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#energy-cost-of-under-utilization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Energy Cost of Under-Utilization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#amdahls-law-strong-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Amdahl's Law: Strong Scaling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Amdahl&#39;s Law: Strong Scaling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-formula" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Formula
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strong-scaling-curve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strong-Scaling Curve
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gustafson-barsiss-law-weak-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gustafson-Barsis's Law: Weak Scaling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gustafson-Barsis&#39;s Law: Weak Scaling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-insight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Insight
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#amdahl-vs-gustafson-barsis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Amdahl vs Gustafson-Barsis
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flynns-taxonomy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flynn's Taxonomy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Flynn&#39;s Taxonomy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sisd-single-instruction-single-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SISD — Single Instruction, Single Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simd-single-instruction-multiple-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SIMD — Single Instruction, Multiple Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#misd-multiple-instruction-single-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MISD — Multiple Instruction, Single Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mimd-multiple-instruction-multiple-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MIMD — Multiple Instruction, Multiple Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cpu-vs-gpu-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CPU vs GPU Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CPU vs GPU Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#design-philosophy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Philosophy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-a-gpu-is-a-good-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When a GPU Is a Good Fit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-a-gpu-is-a-poor-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When a GPU Is a Poor Fit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-performance-portability-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Performance Portability Problem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="module-0-parallel-computing-theory">Module 0: Parallel Computing Theory<a class="headerlink" href="#module-0-parallel-computing-theory" title="Permanent link">&para;</a></h1>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>By the end of this module you will be able to:</p>
+<ul>
+<li>Explain why single-thread CPU performance plateaued around 2005</li>
+<li>Apply Amdahl's Law to predict strong-scaling limits</li>
+<li>Apply Gustafson-Barsis's Law to predict weak-scaling behavior</li>
+<li>Classify hardware and algorithms using Flynn's taxonomy</li>
+<li>Identify when a GPU is and is not the right tool for a problem</li>
+<li>Explain the performance portability problem and why abstraction layers exist</li>
+</ul>
+<hr />
+<h2 id="why-parallelism-matters">Why Parallelism Matters<a class="headerlink" href="#why-parallelism-matters" title="Permanent link">&para;</a></h2>
+<h3 id="the-end-of-free-performance-gains">The End of "Free" Performance Gains<a class="headerlink" href="#the-end-of-free-performance-gains" title="Permanent link">&para;</a></h3>
+<p>For roughly three decades, programmers could rely on Moore's Law to deliver faster
+hardware without changing their code. Clock frequencies doubled roughly every two
+years; a program that ran in 10 seconds today ran in 5 seconds on next year's CPU.</p>
+<p>That era ended around 2005. Clock frequency, single-thread performance, and power
+consumption all plateaued simultaneously. The reasons are coupled:</p>
+<ul>
+<li><strong>Power wall</strong>: Power dissipation scales as <span class="arithmatex">\(P \propto C V^2 f\)</span>, where <span class="arithmatex">\(C\)</span> is
+  capacitance, <span class="arithmatex">\(V\)</span> is supply voltage, and <span class="arithmatex">\(f\)</span> is clock frequency. Shrinking
+  transistors lowers <span class="arithmatex">\(C\)</span> but not <span class="arithmatex">\(V\)</span> proportionally; attempting to raise <span class="arithmatex">\(f\)</span>
+  sends power density to levels that cannot be cooled in commodity packaging.</li>
+<li><strong>ILP wall</strong>: Instruction-level parallelism (out-of-order execution, branch
+  prediction, speculative execution) has diminishing returns; modern CPUs already
+  exploit most of the available ILP in typical code.</li>
+<li><strong>Memory wall</strong>: Memory latency has not kept pace with compute throughput,
+  so a faster ALU often just stalls on data.</li>
+</ul>
+<p>What <em>has</em> continued to grow: core counts. Modern server CPUs have 32–96 cores.
+Modern GPUs have thousands of simple compute units. The hardware is parallel;
+serial code cannot use it.</p>
+<h3 id="the-cost-of-writing-serial-code">The Cost of Writing Serial Code<a class="headerlink" href="#the-cost-of-writing-serial-code" title="Permanent link">&para;</a></h3>
+<p>Consider a single core on a modern 16-core CPU with hyperthreading and 256-bit
+AVX vector units processing 64-bit doubles:</p>
+<div class="arithmatex">\[\text{Parallelism} = \underbrace{16}_{\text{cores}} \times \underbrace{2}_{\text{hyperthreads}} \times \underbrace{\frac{256\text{ bits}}{64\text{ bits}}}_{\text{vector width}} = 128\text{-way}\]</div>
+<p>A serial scalar program exploits exactly 1 of those 128 lanes, achieving roughly
+<span class="arithmatex">\(1/128 \approx 0.8\%\)</span> of available floating-point throughput — before even
+considering that multiple sockets or GPU accelerators may be available.</p>
+<h3 id="energy-cost-of-under-utilization">Energy Cost of Under-Utilization<a class="headerlink" href="#energy-cost-of-under-utilization" title="Permanent link">&para;</a></h3>
+<p>Hardware efficiency translates directly to energy bills. As a concrete example:</p>
+<table>
+<thead>
+<tr>
+<th>Configuration</th>
+<th>Hardware</th>
+<th>Count</th>
+<th>TDP</th>
+<th>Runtime</th>
+<th>Energy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU-only</td>
+<td>Intel Xeon E5-4660 (16-core)</td>
+<td>20 nodes</td>
+<td>120 W</td>
+<td>24 h</td>
+<td>57.6 kWh</td>
+</tr>
+<tr>
+<td>GPU-accelerated</td>
+<td>NVIDIA Tesla V100</td>
+<td>4 GPUs</td>
+<td>300 W</td>
+<td>24 h</td>
+<td>28.8 kWh</td>
+</tr>
+</tbody>
+</table>
+<p>If the GPU configuration solves the same problem in the same wall-clock time using
+half the energy, the choice is clear — provided the code is structured to exploit
+GPU parallelism effectively.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These numbers assume the GPU run achieves the same time-to-solution as the
+CPU cluster. Achieving that requires both algorithmic suitability and careful
+implementation. The rest of this tutorial is about acquiring those skills.</p>
+</div>
+<hr />
+<h2 id="amdahls-law-strong-scaling">Amdahl's Law: Strong Scaling<a class="headerlink" href="#amdahls-law-strong-scaling" title="Permanent link">&para;</a></h2>
+<h3 id="the-formula">The Formula<a class="headerlink" href="#the-formula" title="Permanent link">&para;</a></h3>
+<p>Amdahl's Law describes <em>strong scaling</em>: what happens when you add processors to
+solve a <strong>fixed-size</strong> problem. Let <span class="arithmatex">\(S\)</span> be the serial fraction of the work,
+<span class="arithmatex">\(P = 1 - S\)</span> the parallelizable fraction, and <span class="arithmatex">\(N\)</span> the number of processors. The
+maximum achievable speedup is:</p>
+<div class="arithmatex">\[\text{SpeedUp}(N) = \frac{1}{S + \dfrac{P}{N}}\]</div>
+<h3 id="implications">Implications<a class="headerlink" href="#implications" title="Permanent link">&para;</a></h3>
+<p>The serial fraction <span class="arithmatex">\(S\)</span> is an absolute ceiling on scalability. As <span class="arithmatex">\(N \to \infty\)</span>:</p>
+<div class="arithmatex">\[\lim_{N \to \infty} \text{SpeedUp}(N) = \frac{1}{S}\]</div>
+<table>
+<thead>
+<tr>
+<th>Serial fraction <span class="arithmatex">\(S\)</span></th>
+<th>Max speedup (any <span class="arithmatex">\(N\)</span>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>50%</td>
+<td>2×</td>
+</tr>
+<tr>
+<td>10%</td>
+<td>10×</td>
+</tr>
+<tr>
+<td>5%</td>
+<td>20×</td>
+</tr>
+<tr>
+<td>1%</td>
+<td>100×</td>
+</tr>
+</tbody>
+</table>
+<p>A program with 10% serial code can never exceed 10× speedup, no matter how many
+processors you throw at it. Parallelizing 90% of the code leaves you one decimal
+place of headroom.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Amdahl's Law assumes the serial fraction <span class="arithmatex">\(S\)</span> is constant and cannot be
+parallelized. In practice, synchronization, I/O, initialization, and output
+all contribute to <span class="arithmatex">\(S\)</span>. These costs sometimes <em>grow</em> with <span class="arithmatex">\(N\)</span> (due to
+communication overhead), making real scaling worse than Amdahl predicts.</p>
+</div>
+<h3 id="strong-scaling-curve">Strong-Scaling Curve<a class="headerlink" href="#strong-scaling-curve" title="Permanent link">&para;</a></h3>
+<p>The speedup curve is concave and saturates rapidly:</p>
+<ul>
+<li>At <span class="arithmatex">\(N = 10\)</span> with <span class="arithmatex">\(S = 0.1\)</span>: <span class="arithmatex">\(\text{SpeedUp} = 1/(0.1 + 0.9/10) = 5.26\times\)</span></li>
+<li>At <span class="arithmatex">\(N = 100\)</span> with <span class="arithmatex">\(S = 0.1\)</span>: <span class="arithmatex">\(\text{SpeedUp} = 1/(0.1 + 0.9/100) = 9.17\times\)</span></li>
+<li>At <span class="arithmatex">\(N = 1000\)</span> with <span class="arithmatex">\(S = 0.1\)</span>: <span class="arithmatex">\(\text{SpeedUp} = 9.91\times\)</span></li>
+</ul>
+<p>The marginal return of adding processors falls off quickly. Doubling from 100 to
+200 processors adds less than 0.5× speedup when <span class="arithmatex">\(S = 0.1\)</span>.</p>
+<hr />
+<h2 id="gustafson-barsiss-law-weak-scaling">Gustafson-Barsis's Law: Weak Scaling<a class="headerlink" href="#gustafson-barsiss-law-weak-scaling" title="Permanent link">&para;</a></h2>
+<h3 id="the-insight">The Insight<a class="headerlink" href="#the-insight" title="Permanent link">&para;</a></h3>
+<p>Amdahl's Law holds the problem size fixed. Gustafson and Barsis observed in 1988
+that this is often the wrong model: in practice, scientists <em>choose problem size
+based on available hardware</em>. With more processors, you run a bigger problem in
+the same wall time — not the same problem faster.</p>
+<p>Under weak scaling, the total work grows with <span class="arithmatex">\(N\)</span> while wall time remains constant.
+If the serial work <span class="arithmatex">\(s\)</span> is fixed (does not grow with <span class="arithmatex">\(N\)</span>), the scaled speedup is:</p>
+<div class="arithmatex">\[\text{SpeedUp}(N) = N - S(N - 1)\]</div>
+<p>where <span class="arithmatex">\(S\)</span> is the serial fraction measured <em>on a single processor</em>. Rewritten:
+<span class="arithmatex">\(S \cdot 1 + P \cdot N\)</span> units of work complete in the same time as <span class="arithmatex">\(1\)</span> unit on a
+single processor — a speedup of <span class="arithmatex">\(S + P \cdot N = N - S(N-1)\)</span>.</p>
+<h3 id="amdahl-vs-gustafson-barsis">Amdahl vs Gustafson-Barsis<a class="headerlink" href="#amdahl-vs-gustafson-barsis" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Amdahl (Strong Scaling)</th>
+<th>Gustafson-Barsis (Weak Scaling)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Problem size</td>
+<td>Fixed</td>
+<td>Grows with <span class="arithmatex">\(N\)</span></td>
+</tr>
+<tr>
+<td>What's measured</td>
+<td>Speedup for same problem</td>
+<td>Work done in same time</td>
+</tr>
+<tr>
+<td>Serial bottleneck</td>
+<td>Hard ceiling <span class="arithmatex">\(1/S\)</span></td>
+<td>Scales as <span class="arithmatex">\(N - S(N-1)\)</span></td>
+</tr>
+<tr>
+<td>Practical relevance</td>
+<td>Memory-constrained runs</td>
+<td>Production HPC simulations</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>When reporting scaling results, always state whether you ran a strong or weak
+scaling study. The two tell fundamentally different stories about your code's
+parallel efficiency.</p>
+</div>
+<hr />
+<h2 id="flynns-taxonomy">Flynn's Taxonomy<a class="headerlink" href="#flynns-taxonomy" title="Permanent link">&para;</a></h2>
+<p>Michael Flynn's 1972 classification scheme categorizes computer architectures
+along two axes: instruction stream and data stream, each either Single or Multiple.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Single Data</th>
+<th>Multiple Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Single Instruction</strong></td>
+<td>SISD</td>
+<td>SIMD</td>
+</tr>
+<tr>
+<td><strong>Multiple Instruction</strong></td>
+<td>MISD</td>
+<td>MIMD</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sisd-single-instruction-single-data">SISD — Single Instruction, Single Data<a class="headerlink" href="#sisd-single-instruction-single-data" title="Permanent link">&para;</a></h3>
+<p>A scalar serial processor. One instruction operates on one data element at a time.
+A for-loop executing one iteration per cycle on a single core is SISD. This is the
+model most programmers have in their heads.</p>
+<h3 id="simd-single-instruction-multiple-data">SIMD — Single Instruction, Multiple Data<a class="headerlink" href="#simd-single-instruction-multiple-data" title="Permanent link">&para;</a></h3>
+<p>One instruction operates on multiple data elements simultaneously using vector
+registers. Modern CPUs expose this via AVX/AVX-512 intrinsics or auto-vectorization.
+GPU warps (groups of 32 CUDA threads executing the same instruction) are also
+SIMD at the warp level.</p>
+<p>SIMD is the mechanism behind statements like "256-bit vector units process 4
+doubles at once." The hardware broadcasts a single instruction to multiple ALUs
+operating on adjacent memory.</p>
+<h3 id="misd-multiple-instruction-single-data">MISD — Multiple Instruction, Single Data<a class="headerlink" href="#misd-multiple-instruction-single-data" title="Permanent link">&para;</a></h3>
+<p>Uncommon in practice. Fault-tolerant systems that run the same data through
+independent pipelines to cross-check results (e.g., flight-control computers) fit
+this category.</p>
+<h3 id="mimd-multiple-instruction-multiple-data">MIMD — Multiple Instruction, Multiple Data<a class="headerlink" href="#mimd-multiple-instruction-multiple-data" title="Permanent link">&para;</a></h3>
+<p>Each processor runs its own instruction stream on its own data. This is the model
+for multi-core CPUs and MPI-distributed clusters. OpenMP threads are MIMD;
+MPI ranks are MIMD. Real workloads often combine MIMD at the node level with
+SIMD at the core level.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Modern HPC codes often exploit all four levels of the hierarchy simultaneously:
+SIMD vector units inside MIMD OpenMP threads inside MIMD MPI ranks. Each level
+requires a different programming model and a different set of correctness
+guarantees.</p>
+</div>
+<hr />
+<h2 id="cpu-vs-gpu-architecture">CPU vs GPU Architecture<a class="headerlink" href="#cpu-vs-gpu-architecture" title="Permanent link">&para;</a></h2>
+<h3 id="design-philosophy">Design Philosophy<a class="headerlink" href="#design-philosophy" title="Permanent link">&para;</a></h3>
+<p>CPUs and GPUs reflect opposite design choices about the compute-latency tradeoff.</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>CPU</th>
+<th>GPU</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Core count</td>
+<td>8–96 high-complexity cores</td>
+<td>Thousands of simple shader/CUDA cores</td>
+</tr>
+<tr>
+<td>Clock speed</td>
+<td>3–5 GHz</td>
+<td>1–2 GHz</td>
+</tr>
+<tr>
+<td>Cache depth</td>
+<td>L1 → L2 → L3 → DRAM</td>
+<td>L1 → L2 → HBM/GDDR</td>
+</tr>
+<tr>
+<td>Cache size (L3)</td>
+<td>16–256 MiB</td>
+<td>32–40 MiB (shared L2)</td>
+</tr>
+<tr>
+<td>Branch prediction</td>
+<td>Deep, speculative</td>
+<td>Minimal (branch divergence is expensive)</td>
+</tr>
+<tr>
+<td>Memory bandwidth</td>
+<td>50–200 GB/s (DDR5)</td>
+<td>900–3000 GB/s (HBM3)</td>
+</tr>
+<tr>
+<td>Design target</td>
+<td>Low latency, diverse workloads</td>
+<td>High throughput, regular workloads</td>
+</tr>
+</tbody>
+</table>
+<p>A CPU minimizes latency for any single thread using deep caches and sophisticated
+out-of-order execution. A GPU maximizes aggregate throughput by hiding latency:
+when one warp stalls on a memory load, the hardware instantly switches to another
+warp. This only works when there are thousands of independent warps in flight.</p>
+<h3 id="when-a-gpu-is-a-good-fit">When a GPU Is a Good Fit<a class="headerlink" href="#when-a-gpu-is-a-good-fit" title="Permanent link">&para;</a></h3>
+<p>A workload maps well to a GPU when:</p>
+<ul>
+<li><strong>Loops are order-independent</strong>: any iteration can execute in any order without
+  affecting correctness (no loop-carried dependencies).</li>
+<li><strong>Threads are independent and thread-safe</strong>: no shared mutable state that
+  requires synchronization across threads.</li>
+<li><strong>Memory access is contiguous</strong>: threads in a warp access adjacent
+  addresses (coalesced access). </li>
+<li><strong>Thread divergence is low</strong>: all threads in a warp follow the same control
+  flow path. Divergent branches serialize within the warp.</li>
+<li><strong>Arithmetic intensity is moderate to high</strong>: enough floating-point work per
+  byte loaded to keep the ALUs busy while data is in flight. Pure memory-copy
+  kernels saturate bandwidth but do not stress compute.</li>
+</ul>
+<h3 id="when-a-gpu-is-a-poor-fit">When a GPU Is a Poor Fit<a class="headerlink" href="#when-a-gpu-is-a-poor-fit" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Problem</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tree traversal / oct-trees / kd-trees</td>
+<td>Irregular memory access; poor coalescing</td>
+</tr>
+<tr>
+<td>Dynamic memory allocation in kernels</td>
+<td><code>malloc</code>/<code>new</code> on device is expensive and serializing</td>
+</tr>
+<tr>
+<td>Monte Carlo with divergent paths</td>
+<td>Thread divergence serializes warp execution</td>
+</tr>
+<tr>
+<td>Globally implicit solvers (multi-GPU)</td>
+<td>All-to-all communication across GPUs is slow</td>
+</tr>
+<tr>
+<td>Small datasets</td>
+<td>PCIe transfer overhead dominates compute time</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If the per-thread memory access pattern is random, then
+each thread could potentially request data from many different
+memory locations. This will often generate multiple non-coalesced
+memory accesses per warp, wasting
+<a href="../01-hardware/#cache-line-mechanics">cache-line reads</a> 
+and forcing the entire warp to block until all reads are completed.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Thread divergence occurs when threads within the same warp take 
+different flow control paths in the kernel -- usually due to a logical
+switch statement such as <code>if</code> / <code>else</code>. Since all of the threads in a warp
+share the same instruction cache, threads will be split into multiple
+groups based on which branch of the logical switch they satisfy. Each 
+group then runs the code in its branch while the other remain idle.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Moving data to and from the GPU over PCIe costs roughly 10–15 GB/s. If your
+kernel takes less time than the data transfer, you have made the code slower,
+not faster. Profile the transfer cost before porting to GPU.</p>
+</div>
+<hr />
+<h2 id="the-performance-portability-problem">The Performance Portability Problem<a class="headerlink" href="#the-performance-portability-problem" title="Permanent link">&para;</a></h2>
+<p>Writing GPU code in CUDA produces code that runs only on NVIDIA hardware. HIP
+targets AMD GPUs. SYCL and oneAPI target Intel GPUs and CPUs. OpenMP offload
+supports multiple vendors but with varying compiler maturity.</p>
+<p>This creates a maintenance problem: to support multiple hardware targets, teams
+historically maintained multiple codebases. Bugs fixed in one port were re-introduced
+in another.</p>
+<p><strong>Abstraction layers</strong> solve this by providing a single source that compiles to
+different backends:</p>
+<table>
+<thead>
+<tr>
+<th>Framework</th>
+<th>Backends supported</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kokkos</td>
+<td>CUDA, HIP, SYCL, OpenMP, serial</td>
+</tr>
+<tr>
+<td>RAJA</td>
+<td>CUDA, HIP, OpenMP, sequential</td>
+</tr>
+<tr>
+<td>OpenMP (target offload)</td>
+<td>NVIDIA, AMD, Intel (compiler-dependent)</td>
+</tr>
+<tr>
+<td>SYCL / DPC++</td>
+<td>Intel, NVIDIA (via Codeplay), AMD</td>
+</tr>
+</tbody>
+</table>
+<p>The tradeoff: abstraction layers impose a compilation and conceptual overhead. Code
+written to Kokkos idioms is portable but requires the Kokkos runtime to be installed
+and the developer to understand Kokkos's execution and memory space model.
+<a href="../08-kokkos/">Module 8</a> works through a Kokkos example to demonstrate the tradeoff.</p>
+<hr />
+<h2 id="discussion-questions">Discussion Questions<a class="headerlink" href="#discussion-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>Your application has a serial fraction of 5%. What is the maximum achievable
+   speedup with unlimited processors? At what processor count do you reach 90% of
+   that maximum?</p>
+</li>
+<li>
+<p>If doubling the problem size also doubles the parallel work but leaves the serial
+   work unchanged, which scaling law is more appropriate to apply? What does that
+   law predict about efficiency as <span class="arithmatex">\(N\)</span> grows?</p>
+</li>
+<li>
+<p>Name two properties of your own code that would make it a strong candidate for
+   GPU acceleration, and two properties that would make it a poor candidate. Be
+   specific about which GPU-fit criteria from this module apply.</p>
+</li>
+</ol>
+<details>
+<summary>Show solutions</summary>
+<p><strong>Question 1</strong>: With <span class="arithmatex">\(S = 0.05\)</span>, the maximum speedup is <span class="arithmatex">\(1/0.05 = 20\times\)</span>.
+To reach 90% of that limit (<span class="arithmatex">\(18\times\)</span>), solve <span class="arithmatex">\(18 = 1/(0.05 + 0.95/N)\)</span>, giving
+<span class="arithmatex">\(N = 0.95/(1/18 - 0.05) \approx 171\)</span> processors. Beyond that, adding hardware
+delivers diminishing fractions of a speedup unit.</p>
+<p><strong>Question 2</strong>: This is the Gustafson-Barsis regime. Problem size grows with
+<span class="arithmatex">\(N\)</span>; only the serial work is fixed. The Gustafson-Barsis law predicts
+<span class="arithmatex">\(\text{SpeedUp}(N) = N - S(N-1)\)</span>, which grows linearly in <span class="arithmatex">\(N\)</span> rather than
+saturating. Parallel efficiency — speedup divided by <span class="arithmatex">\(N\)</span> — approaches
+<span class="arithmatex">\((1 - S)\)</span> as <span class="arithmatex">\(N\)</span> grows, not zero.</p>
+<p><strong>Question 3</strong>: Open-ended; answers will vary. Examples of GPU-favorable
+properties: embarrassingly parallel loops with no dependencies, array-of-number
+data with stride-1 access, high arithmetic intensity (e.g., dense linear
+algebra). Examples of GPU-unfavorable properties: irregular sparse graph
+traversal, adaptive mesh refinement with frequent dynamic allocation, tightly
+coupled implicit solvers requiring global reductions at every timestep.</p>
+</details>
+<hr />
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<h3 id="reference-materials">Reference materials<a class="headerlink" href="#reference-materials" title="Permanent link">&para;</a></h3>
+<p>The performance-portability frameworks discussed in this module:</p>
+<ul>
+<li><a href="https://github.com/kokkos/kokkos">Kokkos</a> — performance-portable C++ programming model (covered in <a href="../08-kokkos/">Module 8</a>).</li>
+<li><a href="https://github.com/LLNL/RAJA">RAJA</a> — LLNL's portability abstraction layer.</li>
+<li><a href="https://www.khronos.org/sycl/">SYCL</a> — Khronos open standard for single-source heterogeneous C++.</li>
+<li><a href="https://rocm.docs.amd.com/projects/HIP/en/latest/">HIP</a> — AMD's CUDA-like API for portable GPU kernels.</li>
+<li><a href="https://www.openmp.org/specifications/">OpenMP</a> — directive-based parallelism for CPU and, via offload, GPU.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../.." class="md-footer__link md-footer__link--prev" aria-label="Previous: Home">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Home
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../01-hardware/" class="md-footer__link md-footer__link--next" aria-label="Next: 1: Hardware &amp; Data Layout">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                1: Hardware & Data Layout
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Developed at the High Performance Computing Collaboratory (HPC<sup>2</sup>), Mississippi State University — serving the University, State, and Nation through excellence in computational science and engineering.
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "content.code.annotate", "content.tabs.link", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

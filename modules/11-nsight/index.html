@@ -1,0 +1,1544 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A hands-on tutorial covering parallel programming models and best practices for high-performance computing on workstations and SLURM clusters.
+">
+      
+      
+      
+        <link rel="canonical" href="https://CollinsEM.github.io/HPC-Tutorials/modules/11-nsight/">
+      
+      
+        <link rel="prev" href="../10-valgrind/">
+      
+      
+        <link rel="next" href="../../running/workstation/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/hpc2.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>11: GPU Profiling with Nsight - Parallel Programming for HPC — A Practical Guide</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Open Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#module-11-gpu-profiling-with-nsight" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-header__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Parallel Programming for HPC — A Practical Guide
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              11: GPU Profiling with Nsight
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../00-parallel-theory/" class="md-tabs__link">
+          
+  
+  
+  Modules
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../running/workstation/" class="md-tabs__link">
+          
+  
+  
+  Running Code
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-nav__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    Parallel Programming for HPC — A Practical Guide
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modules
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-parallel-theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0: Parallel Computing Theory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-hardware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1: Hardware & Data Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-autovec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2: Auto-vectorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-openmp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3: OpenMP — CPU Parallelism
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-cuda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4: CUDA — GPU Programming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-stdpar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5: C++17 std::par
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-omp-offload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6: OpenMP Offload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-mpi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7: MPI — Distributed Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-kokkos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8: Kokkos & MATAR — Portability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-profiling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9: Profiling & Performance Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-valgrind/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10: Valgrind — Memory & Threading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11: GPU Profiling with Nsight
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11: GPU Profiling with Nsight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-gpu-needs-its-own-profilers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why GPU Needs Its Own Profilers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nsight-systems-the-timeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nsight Systems — The Timeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Nsight Systems — The Timeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-to-look-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What to look for
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nsight-compute-inside-a-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nsight Compute — Inside a Kernel
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Nsight Compute — Inside a Kernel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-sections-to-read" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key sections to read
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-gpu-roofline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The GPU roofline
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#profiling-under-slurm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profiling Under SLURM
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Code
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Running Code
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/workstation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a Workstation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/slurm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a SLURM Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-gpu-needs-its-own-profilers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why GPU Needs Its Own Profilers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nsight-systems-the-timeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nsight Systems — The Timeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Nsight Systems — The Timeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-to-look-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What to look for
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nsight-compute-inside-a-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nsight Compute — Inside a Kernel
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Nsight Compute — Inside a Kernel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-sections-to-read" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key sections to read
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-gpu-roofline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The GPU roofline
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#profiling-under-slurm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profiling Under SLURM
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="module-11-gpu-profiling-with-nsight">Module 11: GPU Profiling with Nsight<a class="headerlink" href="#module-11-gpu-profiling-with-nsight" title="Permanent link">&para;</a></h1>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>By the end of this module you will be able to:</p>
+<ul>
+<li>Explain why CPU profilers cannot analyze GPU kernels</li>
+<li>Use <strong>Nsight Systems</strong> to see the system-wide timeline and the kernel-vs-transfer split</li>
+<li>Use <strong>Nsight Compute</strong> to analyze a single kernel's occupancy and memory throughput</li>
+<li>Read a GPU roofline and classify a kernel as memory- or compute-bound</li>
+<li>Profile GPU code under SLURM and handle counter-permission issues</li>
+</ul>
+<hr />
+<h2 id="why-gpu-needs-its-own-profilers">Why GPU Needs Its Own Profilers<a class="headerlink" href="#why-gpu-needs-its-own-profilers" title="Permanent link">&para;</a></h2>
+<p>LIKWID reads CPU hardware counters; Valgrind instruments CPU instructions. Neither can see inside a CUDA kernel — the GPU is a separate processor with its own memory, schedulers, and counters. To profile GPU code you need GPU-aware tools. NVIDIA's current suite is <strong>Nsight</strong>, which replaced the legacy <code>nvprof</code>/<code>nvvp</code> tools (deprecated on Volta and newer):</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Scope</th>
+<th>Question it answers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://docs.nvidia.com/nsight-systems/"><strong>Nsight Systems</strong></a> (<code>nsys</code>)</td>
+<td>Whole application timeline</td>
+<td><em>Where does wall-clock time go?</em> Kernels, memcpys, API calls, gaps, CPU↔GPU overlap</td>
+</tr>
+<tr>
+<td><a href="https://docs.nvidia.com/nsight-compute/"><strong>Nsight Compute</strong></a> (<code>ncu</code>)</td>
+<td>One kernel, in depth</td>
+<td><em>Why is this kernel slow?</em> Occupancy, memory throughput, instruction mix, roofline</td>
+</tr>
+</tbody>
+</table>
+<p>The workflow is top-down: <strong>Nsight Systems first</strong> to find which kernel (or which data transfer) dominates, then <strong>Nsight Compute</strong> to dissect that specific kernel. Profiling everything at the <code>ncu</code> level first is a common waste of time.</p>
+<div class="admonition note">
+<p class="admonition-title">Build for profiling</p>
+<p>Compile with <code>-lineinfo</code> (nvcc) so the profilers can correlate metrics back to source lines, and profile an optimized (release) build. <code>-G</code> (full device debug) disables optimizations and distorts timing — use it for <code>cuda-gdb</code>, not for profiling.</p>
+</div>
+<hr />
+<h2 id="nsight-systems-the-timeline">Nsight Systems — The Timeline<a class="headerlink" href="#nsight-systems-the-timeline" title="Permanent link">&para;</a></h2>
+<p>Nsight Systems traces the whole run: CUDA API calls, kernel launches, host↔device memory copies, and CPU activity on one timeline. It is low-overhead and the right first look.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span>examples/CUDA/Example1
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>make
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>nsys<span class="w"> </span>profile<span class="w"> </span>--stats<span class="o">=</span><span class="nb">true</span><span class="w"> </span>-o<span class="w"> </span>triad_report<span class="w"> </span>./stream_triad
+</span></code></pre></div>
+<ul>
+<li><code>--stats=true</code> prints summary tables to the terminal after profiling.</li>
+<li><code>-o triad_report</code> writes <code>triad_report.nsys-rep</code>, which opens in the Nsight Systems GUI for the visual timeline.</li>
+</ul>
+<p>For a terminal-only summary of an existing report:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>nsys<span class="w"> </span>stats<span class="w"> </span>triad_report.nsys-rep
+</span></code></pre></div>
+<h3 id="what-to-look-for">What to look for<a class="headerlink" href="#what-to-look-for" title="Permanent link">&para;</a></h3>
+<p>The summary breaks time down by category. For the Stream Triad you will see something striking — the same lesson <a href="../04-cuda/">Module 4</a> reported numerically:</p>
+<ul>
+<li><strong><code>cudaMemcpy</code> (HtoD/DtoH) dominates.</strong> Moving the three 80 M-element arrays over PCIe dwarfs the kernel itself. The timeline shows long memcpy bars bracketing a thin kernel bar.</li>
+<li><strong>The kernel is tiny.</strong> <code>StreamTriad</code> runs in a fraction of the transfer time.</li>
+<li><strong>Gaps and serialization.</strong> Look for the GPU sitting idle while the CPU prepares the next launch, or transfers that could overlap with compute but do not.</li>
+</ul>
+<p>This view is what turns "the GPU version isn't faster" into a concrete diagnosis: <em>you are transfer-bound, not compute-bound — fix the data movement, not the kernel.</em></p>
+<hr />
+<h2 id="nsight-compute-inside-a-kernel">Nsight Compute — Inside a Kernel<a class="headerlink" href="#nsight-compute-inside-a-kernel" title="Permanent link">&para;</a></h2>
+<p>Once Nsight Systems identifies the kernel worth optimizing, Nsight Compute profiles it in depth. It replays the kernel many times to collect hardware counters, so it is slow — always target a specific kernel and limit launches.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>ncu<span class="w"> </span>--set<span class="w"> </span>full<span class="w"> </span>-k<span class="w"> </span>StreamTriad<span class="w"> </span>-c<span class="w"> </span><span class="m">1</span><span class="w"> </span>-o<span class="w"> </span>triad_kernel<span class="w"> </span>./stream_triad
+</span></code></pre></div>
+<ul>
+<li><code>--set full</code> collects the complete metric set (use <code>--set basic</code> for a fast first pass).</li>
+<li><code>-k StreamTriad</code> profiles only kernels whose name matches.</li>
+<li><code>-c 1</code> profiles a single launch (the benchmark runs 16; one is enough).</li>
+<li><code>-o triad_kernel</code> writes <code>triad_kernel.ncu-rep</code> for the <code>ncu-ui</code> GUI; omit <code>-o</code> to print to the terminal.</li>
+</ul>
+<h3 id="key-sections-to-read">Key sections to read<a class="headerlink" href="#key-sections-to-read" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>GPU Speed Of Light</strong> — the headline: achieved percentage of peak <em>compute</em> and peak <em>memory</em> throughput. For the triad, memory will be high and compute low — the signature of a memory-bound kernel.</li>
+<li><strong>Memory Workload Analysis</strong> — achieved DRAM bandwidth in GB/s; compare to the GPU's spec (e.g., ~900 GB/s on a V100, ~2 TB/s on an A100/H100). Near-peak here means the kernel is doing as well as the hardware allows.</li>
+<li><strong>Occupancy</strong> — active warps versus the theoretical maximum. Low occupancy can hide memory latency poorly; but a memory-bound kernel at peak bandwidth is already optimal regardless of occupancy.</li>
+<li><strong>Roofline</strong> — Nsight Compute plots the kernel on the GPU's roofline automatically, showing how close it sits to the bandwidth ceiling.</li>
+</ul>
+<h3 id="the-gpu-roofline">The GPU roofline<a class="headerlink" href="#the-gpu-roofline" title="Permanent link">&para;</a></h3>
+<p>The <a href="../09-profiling/">roofline model</a> applies to GPUs with the GPU's own ceilings. The Stream Triad's arithmetic intensity (~0.08 FLOP/byte) places it far left, pinned to the bandwidth ceiling — so the only way to go faster is to move less data or use faster memory, never more FLOP/s. Contrast the <a href="../08-kokkos/">Kokkos matmul</a>, whose high intensity puts it near the compute ceiling where the GPU's thousands of FPUs dominate.</p>
+<hr />
+<h2 id="profiling-under-slurm">Profiling Under SLURM<a class="headerlink" href="#profiling-under-slurm" title="Permanent link">&para;</a></h2>
+<p>GPU profiling needs a GPU node, and Nsight Compute needs access to GPU performance counters — which clusters often restrict.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Interactive (recommended)</label><label for="__tabbed_1_2">Batch</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>salloc<span class="w"> </span>-N1<span class="w"> </span>-n1<span class="w"> </span>--gres<span class="o">=</span>gpu:1<span class="w"> </span>--time<span class="o">=</span><span class="m">00</span>:30:00
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1"># on the granted node:</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>module<span class="w"> </span>load<span class="w"> </span>cuda/12.0
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>nsys<span class="w"> </span>profile<span class="w"> </span>--stats<span class="o">=</span><span class="nb">true</span><span class="w"> </span>-o<span class="w"> </span>report<span class="w"> </span>./stream_triad
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>ncu<span class="w"> </span>--set<span class="w"> </span>basic<span class="w"> </span>-k<span class="w"> </span>StreamTriad<span class="w"> </span>-c<span class="w"> </span><span class="m">1</span><span class="w"> </span>./stream_triad
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>Add the profiling command to a job script (model it on <code>examples/CUDA/Example1/run.slurm</code>), writing the report to a file you open later:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>nsys<span class="w"> </span>profile<span class="w"> </span>-o<span class="w"> </span><span class="nv">$SLURM_SUBMIT_DIR</span>/report_%j<span class="w"> </span>./stream_triad
+</span></code></pre></div></p>
+</div>
+</div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">ERR_NVGPUCTRPERM — counter permissions</p>
+<p>Nsight Compute often fails for non-root users with <em>"The user does not have permission to access NVIDIA GPU Performance Counters."</em> This is a driver-level restriction (<code>NVreg_RestrictProfilingToAdminUsers</code>). The fix requires an administrator to relax it. Nsight <strong>Systems</strong> does <em>not</em> need these counters, so timeline profiling usually works even when <code>ncu</code> does not — another reason to start there.</p>
+</div>
+<hr />
+<h2 id="assignment">Assignment<a class="headerlink" href="#assignment" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p><strong>Timeline.</strong> Build the CUDA Stream Triad and run <code>nsys profile --stats=true</code>. From the summary, record the total time in kernels versus in <code>cudaMemcpy</code>. What fraction is data transfer? Does it match the kernel-vs-transfer numbers the program prints itself (from <a href="../04-cuda/">Module 4</a>)?</p>
+</li>
+<li>
+<p><strong>Kernel.</strong> Run <code>ncu --set basic -k StreamTriad -c 1</code>. Read the GPU Speed Of Light section: what percentage of peak memory throughput does the kernel achieve, and what percentage of peak compute? Which one is the limiter?</p>
+</li>
+<li>
+<p><strong>Bandwidth vs spec.</strong> From Nsight Compute's Memory Workload Analysis, record the achieved DRAM bandwidth and compare it to your GPU's rated bandwidth. How close to peak is the triad?</p>
+</li>
+<li>
+<p><strong>Roofline.</strong> Locate the kernel on Nsight Compute's roofline chart. Confirm it sits on the bandwidth ceiling, and explain why increasing the block size or thread count will not move it up.</p>
+</li>
+<li>
+<p><strong>(If <code>ncu</code> is blocked)</strong> If you hit <code>ERR_NVGPUCTRPERM</code>, complete the analysis with Nsight Systems alone: what can you still conclude about the kernel-vs-transfer balance without kernel-level counters?</p>
+</li>
+</ol>
+<hr />
+<h2 id="discussion-questions">Discussion Questions<a class="headerlink" href="#discussion-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>Nsight Systems shows data transfer taking 20× the kernel time for the Stream Triad. List two concrete code changes that would cut the <em>transfer</em> cost, and explain why optimizing the kernel itself would be wasted effort here.</p>
+</li>
+<li>
+<p>Nsight Compute reports the triad kernel at 90% of peak memory throughput but only 3% of peak compute. Is this kernel well-optimized or poorly optimized? Defend your answer using the roofline.</p>
+</li>
+<li>
+<p>Why is the top-down order — Nsight Systems before Nsight Compute — more efficient than profiling every kernel with <code>ncu</code> from the start?</p>
+</li>
+<li>
+<p>Occupancy for the triad kernel is moderate, yet it achieves near-peak bandwidth. Why is chasing higher occupancy pointless for this kernel, and for what kind of kernel <em>would</em> raising occupancy help?</p>
+</li>
+</ol>
+<details>
+<summary>Show solutions</summary>
+<p><strong>Question 1</strong>: Two concrete changes to cut transfer cost:
+(1) <strong>Pinned (page-locked) host memory</strong> — allocate with <code>cudaMallocHost</code>
+instead of <code>malloc</code>. Pinned memory enables direct DMA transfers at full PCIe
+bandwidth (~16–32 GB/s) rather than routing through a staging buffer; typical
+speedup is 2–3× on transfer time alone.
+(2) <strong>CUDA streams with double-buffering</strong> — split the data into chunks and
+overlap a transfer of chunk <span class="arithmatex">\(k+1\)</span> with computation on chunk <span class="arithmatex">\(k\)</span> using two
+streams. When the kernel is faster than the transfer (as here, 20×), the
+transfers become the critical path; overlap hides most of their latency.</p>
+<p>Optimizing the kernel is wasted effort because the kernel accounts for only
+<span class="arithmatex">\(1/(1+20) \approx 5\%\)</span> of total wall time. Making the kernel infinitely fast
+saves at most 5%. The roofline confirms the kernel itself is already
+near-peak-bandwidth for its arithmetic intensity; the bottleneck is the PCIe
+bus, not GPU compute.</p>
+<p><strong>Question 2</strong>: This kernel is <strong>well-optimized</strong> for what it is. The Stream
+Triad has arithmetic intensity ≈ 0.06 FLOP/byte, placing it firmly on the
+bandwidth-bound side of the roofline. At 90% of peak memory throughput, the
+kernel is achieving nearly the maximum the hardware can deliver for this
+algorithm. The 3% compute utilization is expected and correct — the FPUs are
+idle most of the time waiting for memory, not because the kernel is written
+badly, but because the algorithm is inherently data-starved. A "well-optimized"
+bandwidth-bound kernel <em>should</em> show high memory utilization and low compute
+utilization; that is the roofline prediction confirmed by measurement.</p>
+<p><strong>Question 3</strong>: Nsight Systems adds negligible overhead (1–5%) to the
+whole program and shows a timeline of every kernel, transfer, and CPU call.
+From this you identify the one or two kernels that dominate runtime — often
+less than 5% of kernels account for 95% of GPU time. Only those hot kernels
+are worth profiling with Nsight Compute, which adds 20–100× overhead per
+kernel and generates hundreds of counters. Profiling every kernel with <code>ncu</code>
+from the start would slow the program by orders of magnitude, produce vast
+amounts of data to sift through, and spend most of the effort on kernels that
+contribute nothing measurable to wall time. The top-down workflow matches
+effort to impact.</p>
+<p><strong>Question 4</strong>: Occupancy is the fraction of the SM's maximum warps that are
+active. For a bandwidth-bound kernel like the triad, the bottleneck is how fast
+data can be delivered from DRAM — not how many warps are scheduled. Once there
+are enough active warps to keep the memory bus fully utilized (typically 4–8
+warps per SM is sufficient for high-bandwidth streaming), additional warps add
+no benefit because the memory controller is already saturated. Higher occupancy
+helps kernels that are <strong>latency-bound</strong> or <strong>compute-bound</strong>: latency-bound
+kernels (e.g., irregular sparse access, texture fetches) use more warps to hide
+stall cycles; compute-bound kernels use more warps to keep FPUs busy during
+long-latency instructions. For the triad, extra warps are just more threads
+waiting in the same memory queue.</p>
+</details>
+<hr />
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<h3 id="reference-materials">Reference materials<a class="headerlink" href="#reference-materials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://docs.nvidia.com/nsight-systems/">Nsight Systems</a> — system-wide timeline profiler (<a href="https://docs.nvidia.com/nsight-systems/UserGuide/">User Guide</a>).</li>
+<li><a href="https://docs.nvidia.com/nsight-compute/">Nsight Compute</a> — single-kernel profiler (<a href="https://docs.nvidia.com/nsight-compute/NsightComputeCli/">CLI reference</a>, <a href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/">Kernel Profiling Guide</a>).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../10-valgrind/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 10: Valgrind — Memory &amp; Threading">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                10: Valgrind — Memory & Threading
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../running/workstation/" class="md-footer__link md-footer__link--next" aria-label="Next: On a Workstation">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                On a Workstation
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Developed at the High Performance Computing Collaboratory (HPC<sup>2</sup>), Mississippi State University — serving the University, State, and Nation through excellence in computational science and engineering.
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "content.code.annotate", "content.tabs.link", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

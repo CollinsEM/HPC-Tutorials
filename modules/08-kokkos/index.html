@@ -1,0 +1,1661 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A hands-on tutorial covering parallel programming models and best practices for high-performance computing on workstations and SLURM clusters.
+">
+      
+      
+      
+        <link rel="canonical" href="https://CollinsEM.github.io/HPC-Tutorials/modules/08-kokkos/">
+      
+      
+        <link rel="prev" href="../07-mpi/">
+      
+      
+        <link rel="next" href="../09-profiling/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/hpc2.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>8: Kokkos & MATAR — Portability - Parallel Programming for HPC — A Practical Guide</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Open Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#module-8-kokkos-matar-performance-portability" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-header__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Parallel Programming for HPC — A Practical Guide
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              8: Kokkos & MATAR — Portability
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../00-parallel-theory/" class="md-tabs__link">
+          
+  
+  
+  Modules
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../running/workstation/" class="md-tabs__link">
+          
+  
+  
+  Running Code
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-nav__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    Parallel Programming for HPC — A Practical Guide
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modules
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-parallel-theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0: Parallel Computing Theory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-hardware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1: Hardware & Data Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-autovec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2: Auto-vectorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-openmp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3: OpenMP — CPU Parallelism
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-cuda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4: CUDA — GPU Programming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-stdpar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5: C++17 std::par
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-omp-offload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6: OpenMP Offload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-mpi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7: MPI — Distributed Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8: Kokkos & MATAR — Portability
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8: Kokkos & MATAR — Portability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-portability-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Portability Problem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kokkos-core-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kokkos Core Concepts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Kokkos Core Concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#execution-and-memory-spaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution and memory spaces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#views" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Views
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parallel-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parallel execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synchronization-and-host-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Synchronization and host access
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-kokkos-matmul-example-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Kokkos Matmul (Example 1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-for-any-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building for Any Backend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#matar-a-higher-level-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MATAR: A Higher-Level Layer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-profiling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9: Profiling & Performance Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-valgrind/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10: Valgrind — Memory & Threading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-nsight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11: GPU Profiling with Nsight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Code
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Running Code
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/workstation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a Workstation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/slurm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a SLURM Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-portability-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Portability Problem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kokkos-core-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kokkos Core Concepts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Kokkos Core Concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#execution-and-memory-spaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution and memory spaces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#views" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Views
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parallel-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parallel execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synchronization-and-host-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Synchronization and host access
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-kokkos-matmul-example-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Kokkos Matmul (Example 1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-for-any-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building for Any Backend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#matar-a-higher-level-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MATAR: A Higher-Level Layer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="module-8-kokkos-matar-performance-portability">Module 8: Kokkos &amp; MATAR — Performance Portability<a class="headerlink" href="#module-8-kokkos-matar-performance-portability" title="Permanent link">&para;</a></h1>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>By the end of this module you will be able to:</p>
+<ul>
+<li>Explain the performance-portability problem and how an abstraction layer solves it</li>
+<li>Describe Kokkos <em>execution spaces</em>, <em>memory spaces</em>, and <em>Views</em></li>
+<li>Write a parallel kernel with <code>parallel_for</code>, <code>KOKKOS_LAMBDA</code>, and <code>MDRangePolicy</code></li>
+<li>Move data between host and device with mirror views and <code>deep_copy</code></li>
+<li>Build the <em>same source</em> for serial, OpenMP, CUDA, or HIP backends by changing one flag</li>
+<li>Recognize how MATAR layers a terser syntax on top of Kokkos — and spot a data race in nested parallelism</li>
+</ul>
+<hr />
+<h2 id="the-portability-problem">The Portability Problem<a class="headerlink" href="#the-portability-problem" title="Permanent link">&para;</a></h2>
+<p><a href="../00-parallel-theory/">Module 0</a> ended on a warning: every GPU vendor has its own native programming model.</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Targets</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CUDA</td>
+<td>NVIDIA GPUs only</td>
+</tr>
+<tr>
+<td>HIP</td>
+<td>AMD GPUs (and NVIDIA via a shim)</td>
+</tr>
+<tr>
+<td>SYCL / oneAPI</td>
+<td>Intel GPUs (and others)</td>
+</tr>
+<tr>
+<td>OpenMP / OpenACC</td>
+<td>CPUs and, with offload, GPUs</td>
+</tr>
+</tbody>
+</table>
+<p>A code written in CUDA runs only on NVIDIA hardware. Porting it to an AMD or Intel machine means rewriting every kernel. For a large scientific code with a decade of development behind it, that is untenable.</p>
+<p><a href="https://github.com/kokkos/kokkos"><strong>Kokkos</strong></a> solves this by interposing a C++ abstraction layer between your code and the backend. You write the algorithm <em>once</em> using Kokkos constructs; at compile time you select a backend (Serial, OpenMP, Threads, CUDA, HIP), and Kokkos generates the appropriate low-level code. It is plain C++ — no special compiler required — so the same <code>matmul.cpp</code> in this module compiles to a multicore CPU binary or an NVIDIA GPU binary depending only on how you build Kokkos.</p>
+<div class="admonition note">
+<p class="admonition-title">A different benchmark: matrix multiply</p>
+<p>Like the <a href="../07-mpi/">MPI module</a>, this module uses a <strong>dense matrix multiply</strong> (<span class="arithmatex">\(C = A \times B\)</span>, <span class="arithmatex">\(N = 1024\)</span>) rather than the Stream Triad. Matmul performs <span class="arithmatex">\(2N^3\)</span> floating-point operations on <span class="arithmatex">\(3N^2\)</span> data — an arithmetic intensity of <span class="arithmatex">\(O(N)\)</span>, which makes it <strong>compute-bound</strong> for large <span class="arithmatex">\(N\)</span>. That is the opposite regime from the bandwidth-bound triad, and it puts the kernel on the flat "compute ceiling" of the <a href="../02-autovec/">roofline model</a> where extra FLOP/s actually help.</p>
+</div>
+<hr />
+<h2 id="kokkos-core-concepts">Kokkos Core Concepts<a class="headerlink" href="#kokkos-core-concepts" title="Permanent link">&para;</a></h2>
+<h3 id="execution-and-memory-spaces">Execution and memory spaces<a class="headerlink" href="#execution-and-memory-spaces" title="Permanent link">&para;</a></h3>
+<p>Kokkos separates <em>where code runs</em> from <em>where data lives</em>:</p>
+<ul>
+<li>An <strong>execution space</strong> is a place that runs parallel work — <code>Kokkos::Serial</code>, <code>Kokkos::OpenMP</code>, <code>Kokkos::Cuda</code>, <code>Kokkos::HIP</code>. The <code>DefaultExecutionSpace</code> is whichever backend you compiled with.</li>
+<li>A <strong>memory space</strong> is a place that stores data — host DRAM (<code>HostSpace</code>), CUDA device memory (<code>CudaSpace</code>), etc.</li>
+</ul>
+<p>On a GPU build, the default execution and memory spaces are the device; on a CPU build, they are the host. Writing to the default spaces is what makes one source portable.</p>
+<h3 id="views">Views<a class="headerlink" href="#views" title="Permanent link">&para;</a></h3>
+<p>A <code>Kokkos::View</code> is a reference-counted, multidimensional array that lives in a memory space and carries a hardware-optimal data layout:</p>
+<div class="language-cpp highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">Kokkos</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">**&gt;</span><span class="w"> </span><span class="n">A</span><span class="p">(</span><span class="s">&quot;A&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">);</span><span class="w">   </span><span class="c1">// N x N array of doubles on the default device</span>
+</span></code></pre></div>
+<p>The <code>double**</code> denotes rank-2; the string <code>"A"</code> is a debug label. By default a View lives in device memory, so you cannot index it directly from host code — you mirror it (below).</p>
+<h3 id="parallel-execution">Parallel execution<a class="headerlink" href="#parallel-execution" title="Permanent link">&para;</a></h3>
+<p><code>Kokkos::parallel_for</code> launches a kernel. The iteration space is described by an <em>execution policy</em>, and the body is a <code>KOKKOS_LAMBDA</code> — a macro that expands to a lambda annotated to run on host <em>or</em> device:</p>
+<div class="language-cpp highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// 1-D range policy: idx runs 0..N*N-1</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">Kokkos</span><span class="o">::</span><span class="n">parallel_for</span><span class="p">(</span><span class="s">&quot;init&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="o">*</span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">KOKKOS_LAMBDA</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">idx</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* ... */</span><span class="w"> </span><span class="p">});</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1">// 2-D range policy: (i, j) ranges over the N x N tile</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">Kokkos</span><span class="o">::</span><span class="n">parallel_for</span><span class="p">(</span><span class="s">&quot;matmul&quot;</span><span class="p">,</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="n">Kokkos</span><span class="o">::</span><span class="n">MDRangePolicy</span><span class="o">&lt;</span><span class="n">Kokkos</span><span class="o">::</span><span class="n">Rank</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;&gt;</span><span class="p">({</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">}),</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="n">KOKKOS_LAMBDA</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* ... */</span><span class="w"> </span><span class="p">});</span>
+</span></code></pre></div>
+<p><code>MDRangePolicy&lt;Rank&lt;n&gt;&gt;</code> gives Kokkos an <em>n</em>-dimensional iteration space it can tile efficiently for the target hardware — the portable equivalent of CUDA's nested grid/block indexing.</p>
+<div class="admonition warning">
+<p class="admonition-title">Parallelize the independent loops only</p>
+<p>In an MDRangePolicy of rank <em>n</em>, <strong>all <em>n</em> indices run in parallel</strong>. That is correct only when each <code>(i, j, ...)</code> iteration writes a distinct output. The matmul reduction over <code>k</code> must <em>not</em> be one of the parallel ranks, or multiple threads race to update the same <code>C(i,j)</code>. Keep <code>k</code> as a sequential loop inside the kernel. This is exactly the bug we examine in the MATAR section.</p>
+</div>
+<h3 id="synchronization-and-host-access">Synchronization and host access<a class="headerlink" href="#synchronization-and-host-access" title="Permanent link">&para;</a></h3>
+<p>GPU kernels are asynchronous, so you call <code>Kokkos::fence()</code> before timing or reading results. To inspect device data on the host, create a mirror and copy:</p>
+<div class="language-cpp highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">auto</span><span class="w"> </span><span class="n">h_C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Kokkos</span><span class="o">::</span><span class="n">create_mirror_view_and_copy</span><span class="p">(</span><span class="n">Kokkos</span><span class="o">::</span><span class="n">HostSpace</span><span class="p">(),</span><span class="w"> </span><span class="n">C</span><span class="p">);</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1">// h_C(i, j) is now safe to read on the host</span>
+</span></code></pre></div>
+<p><code>Kokkos::deep_copy(C, 0.0)</code> fills a View; <code>deep_copy(dst, src)</code> moves data between spaces. Every program brackets its work in <code>Kokkos::initialize(argc, argv)</code> / <code>Kokkos::finalize()</code>.</p>
+<hr />
+<h2 id="the-kokkos-matmul-example-1">The Kokkos Matmul (Example 1)<a class="headerlink" href="#the-kokkos-matmul-example-1" title="Permanent link">&para;</a></h2>
+<p>The core of <code>examples/Kokkos/Example1/matmul.cpp</code>:</p>
+<div class="language-cpp highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">Kokkos</span><span class="o">::</span><span class="n">View</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">**&gt;</span><span class="w"> </span><span class="n">A</span><span class="p">(</span><span class="s">&quot;A&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">),</span><span class="w"> </span><span class="n">B</span><span class="p">(</span><span class="s">&quot;B&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">),</span><span class="w"> </span><span class="n">C</span><span class="p">(</span><span class="s">&quot;C&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">);</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1">// Random initialization, run in parallel on the device</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">Kokkos</span><span class="o">::</span><span class="n">Random_XorShift64_Pool</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">random_pool</span><span class="p">(</span><span class="mi">12345</span><span class="p">);</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">Kokkos</span><span class="o">::</span><span class="n">parallel_for</span><span class="p">(</span><span class="s">&quot;init_matrices&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="o">*</span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">KOKKOS_LAMBDA</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">idx</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">idx</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">N</span><span class="p">;</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">idx</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">N</span><span class="p">;</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">rand_gen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">random_pool</span><span class="p">.</span><span class="n">get_state</span><span class="p">();</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">  </span><span class="n">A</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rand_gen</span><span class="p">.</span><span class="n">drand</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">  </span><span class="n">B</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rand_gen</span><span class="p">.</span><span class="n">drand</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">  </span><span class="n">random_pool</span><span class="p">.</span><span class="n">free_state</span><span class="p">(</span><span class="n">rand_gen</span><span class="p">);</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="p">});</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="n">Kokkos</span><span class="o">::</span><span class="n">deep_copy</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">);</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="c1">// Matrix multiply: parallel over (i, j), sequential reduction over k</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="n">Kokkos</span><span class="o">::</span><span class="n">parallel_for</span><span class="p">(</span><span class="s">&quot;matrix_multiply&quot;</span><span class="p">,</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">  </span><span class="n">Kokkos</span><span class="o">::</span><span class="n">MDRangePolicy</span><span class="o">&lt;</span><span class="n">Kokkos</span><span class="o">::</span><span class="n">Rank</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;&gt;</span><span class="p">({</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">}),</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">  </span><span class="n">KOKKOS_LAMBDA</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">      </span><span class="n">sum</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">A</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">B</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">);</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">    </span><span class="n">C</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sum</span><span class="p">;</span>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">  </span><span class="p">});</span>
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="n">Kokkos</span><span class="o">::</span><span class="n">fence</span><span class="p">();</span>
+</span></code></pre></div>
+<p>This is the <strong>correct</strong> decomposition: each <code>(i, j)</code> thread owns one output element and accumulates into a <em>private</em> <code>sum</code>, so there is no race. The program then mirrors <code>A</code>, <code>B</code>, <code>C</code> to the host, recomputes a 3×3 corner, checks the relative error, and reports GFLOPS as <span class="arithmatex">\(2N^3 / (t \times 10^6)\)</span>.</p>
+<p>It also prints <code>typeid(Kokkos::DefaultExecutionSpace).name()</code> — a quick way to confirm which backend the binary was built for.</p>
+<hr />
+<h2 id="building-for-any-backend">Building for Any Backend<a class="headerlink" href="#building-for-any-backend" title="Permanent link">&para;</a></h2>
+<p>This is where portability pays off. The example ships two scripts:</p>
+<ul>
+<li><strong><code>kokkos-install.sh</code></strong> clones Kokkos and builds it for a chosen backend (<code>-t serial|openmp|pthreads|cuda|hip</code>), setting flags like <code>-DKokkos_ENABLE_CUDA=ON</code> or <code>-DKokkos_ENABLE_OPENMP=ON</code>.</li>
+<li><strong><code>build.sh</code></strong> invokes the installer, then configures and compiles <code>matmul.cpp</code> against that Kokkos install.</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">C++20 compiler required</p>
+<p>The scripts clone Kokkos from its <code>main</code> branch, which is Kokkos 5.x. Kokkos 5.x enforces <strong>C++20</strong> as a minimum standard, so your compiler must support it: GCC ≥ 10, Clang ≥ 10, or MSVC 2019 v16.11 (released 2020). On an HPC cluster, load a sufficiently recent compiler module before running the scripts. If you are stuck on GCC 9 or older, you will need to either upgrade the compiler or pin Kokkos to the last C++17-compatible release (4.x).</p>
+</div>
+<p>The <strong>same <code>matmul.cpp</code></strong> produces a CPU or GPU binary depending only on <code>-t</code>:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Workstation — multicore CPU</label><label for="__tabbed_1_2">Workstation — NVIDIA GPU</label><label for="__tabbed_1_3">SLURM cluster</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">cd</span><span class="w"> </span>examples/Kokkos/Example1
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>./build.sh<span class="w"> </span>-t<span class="w"> </span>openmp
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nb">cd</span><span class="w"> </span>build_openmp
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OMP_NUM_THREADS</span><span class="o">=</span><span class="m">8</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>./matmul
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">cd</span><span class="w"> </span>examples/Kokkos/Example1
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>./build.sh<span class="w"> </span>-t<span class="w"> </span>cuda<span class="w">      </span><span class="c1"># requires nvcc + CUDA toolkit</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="nb">cd</span><span class="w"> </span>build_cuda
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>./matmul
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>See <code>examples/Kokkos/run.slurm</code>. It takes the backend as an argument and requests a GPU only when needed. Building Kokkos from source the first time takes several minutes, so the script's wall-clock request is generous.</p>
+</div>
+</div>
+</div>
+<p>Run the same kernel under <code>serial</code>, <code>openmp</code>, and (if you have a GPU) <code>cuda</code>, and compare the reported GFLOPS. The execution-space line printed at startup confirms each binary really used a different backend — from one unchanged source file.</p>
+<hr />
+<h2 id="matar-a-higher-level-layer">MATAR: A Higher-Level Layer<a class="headerlink" href="#matar-a-higher-level-layer" title="Permanent link">&para;</a></h2>
+<p><a href="https://github.com/lanl/MATAR">MATAR</a> is a thin array/loop abstraction built <em>on top of</em> Kokkos. It trades some explicitness for terser code: <code>CArrayKokkos</code> replaces <code>Kokkos::View</code>, and the <code>FOR_ALL</code> macro replaces <code>parallel_for</code> + policy + lambda. The same matmul, from <code>examples/MATAR/Example1/matmul.cpp</code>:</p>
+<div class="language-cpp highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">mtr</span><span class="p">;</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">CArrayKokkos</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">A</span><span class="p">(</span><span class="n">MATRIX_SIZE</span><span class="p">,</span><span class="w"> </span><span class="n">MATRIX_SIZE</span><span class="p">);</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">CArrayKokkos</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">B</span><span class="p">(</span><span class="n">MATRIX_SIZE</span><span class="p">,</span><span class="w"> </span><span class="n">MATRIX_SIZE</span><span class="p">);</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">CArrayKokkos</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">C</span><span class="p">(</span><span class="n">MATRIX_SIZE</span><span class="p">,</span><span class="w"> </span><span class="n">MATRIX_SIZE</span><span class="p">);</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">A</span><span class="p">.</span><span class="n">set_values</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="n">B</span><span class="p">.</span><span class="n">set_values</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="n">C</span><span class="p">.</span><span class="n">set_values</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="n">FOR_ALL</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">MATRIX_SIZE</span><span class="p">,</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">        </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">MATRIX_SIZE</span><span class="p">,</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">        </span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">MATRIX_SIZE</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">    </span><span class="n">C</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">A</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">B</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">j</span><span class="p">);</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="p">});</span>
+</span></code></pre></div>
+<p>This is undeniably compact. But it harbors a bug, and it is instructive precisely because the bug is invisible until you change backends.</p>
+<div class="admonition warning">
+<p class="admonition-title">This <code>FOR_ALL</code> has a data race</p>
+<p>The three-index <code>FOR_ALL(i, …, j, …, k, …)</code> expands to a Kokkos <code>MDRangePolicy&lt;Rank&lt;3&gt;&gt;</code> — it parallelizes <strong>all three</strong> loops, <code>k</code> included. So many threads with different <code>k</code> simultaneously execute <code>C(i,j) += …</code> on the <em>same</em> element, a classic read-modify-write race.</p>
+<p>On the <strong>serial</strong> backend there is no concurrency, so it prints the right answer (<span class="arithmatex">\(C_{ij} = 1024 \times 2 \times 2 = 4096\)</span>) and looks fine. The <strong>OpenMP</strong> backend also appears correct in practice: Kokkos's <code>MDRangePolicy</code> schedules work in tiles, and with default tile sizes the k iterations for a given (i,j) pair happen to land in the same tile — serializing the race away. The code is still wrong, but the bug is invisible.</p>
+<p>Build with <strong><code>-t cuda</code></strong> and the race explodes: hundreds of threads with different <code>k</code> race to update <code>C(i,j)</code> simultaneously, and only the last write survives. The result is nondeterministic and off by a factor of ~1024 — values near 4 instead of 4096, changing run-to-run. This is the canonical GPU surprise: a latent race that passes all CPU testing then fails catastrophically on the first GPU run.</p>
+<p><strong>The fix</strong> is to keep <code>k</code> sequential — parallelize only <code>i</code> and <code>j</code>:
+<div class="language-cpp highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">FOR_ALL</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">MATRIX_SIZE</span><span class="p">,</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">        </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">MATRIX_SIZE</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">MATRIX_SIZE</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">        </span><span class="n">sum</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">A</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">B</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">j</span><span class="p">);</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="n">C</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sum</span><span class="p">;</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="p">});</span>
+</span></code></pre></div></p>
+</div>
+<p>The lesson is not that MATAR is bad — it is a productive abstraction — but that <strong>an abstraction does not relieve you of reasoning about correctness.</strong> A higher-level loop macro makes it <em>easier</em> to accidentally parallelize a reduction.</p>
+<p>MATAR is built the same way as Kokkos (<code>build.sh -t &lt;backend&gt;</code>), since it compiles down to Kokkos.</p>
+<hr />
+<h2 id="assignment">Assignment<a class="headerlink" href="#assignment" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p><strong>Build and run the Kokkos example</strong> on the <code>serial</code> and <code>openmp</code> backends. Set <code>OMP_NUM_THREADS</code> to your core count. Record GFLOPS for each and confirm the execution-space line changes.</p>
+</li>
+<li>
+<p><strong>(If you have a GPU)</strong> Build with <code>-t cuda</code> and compare. Explain why matmul shows a much larger CPU→GPU speedup than the Stream Triad did in earlier modules. (Hint: arithmetic intensity and the roofline.)</p>
+</li>
+<li>
+<p><strong>Reproduce the MATAR race.</strong> Build the MATAR example <code>-t serial</code> and confirm <code>C(i,j) = 4096</code> in the corner output. Build again with <code>-t openmp</code> — the result still looks correct (the race is latent, hidden by tiling). Now build with <code>-t cuda</code> and observe values near 4 instead of 4096, changing run-to-run. Apply the fix above, rebuild with <code>-t cuda</code>, and confirm all elements return to 4096.</p>
+</li>
+</ol>
+<details class="success">
+<summary>Why matmul scales to the GPU but the triad barely did</summary>
+<p>The Stream Triad moves 24 bytes per 2 FLOPs — intensity ≈ 0.08 FLOP/byte — so it is pinned to the memory-bandwidth ceiling on every device, and a GPU's main advantage there is just its higher memory bandwidth. Matmul does <span class="arithmatex">\(2N^3\)</span> FLOPs over <span class="arithmatex">\(3N^2\)</span> data — intensity grows with <span class="arithmatex">\(N\)</span> — so for <span class="arithmatex">\(N = 1024\)</span> it sits on the <em>compute</em> ceiling, where a GPU's thousands of FPUs deliver a large speedup over a CPU. Same hardware, opposite regime, because of arithmetic intensity.</p>
+</details>
+<hr />
+<h2 id="discussion-questions">Discussion Questions<a class="headerlink" href="#discussion-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>Kokkos chooses the backend at <strong>compile</strong> time, not run time. What are the advantages of that design over a runtime dispatch, and what flexibility does it cost?</p>
+</li>
+<li>
+<p>The Kokkos matmul accumulates into a private <code>double sum</code> and writes <code>C(i,j)</code> once; the buggy MATAR version updates <code>C(i,j)</code> in place across a parallel <code>k</code>. Beyond correctness, why is the private-accumulator version also usually <em>faster</em> on a GPU?</p>
+</li>
+<li>
+<p>A <code>Kokkos::View</code> defaults to device memory, requiring mirror views for host access. How does this explicit host/device separation compare to the unified-memory model used by <code>std::par</code> (<a href="../05-stdpar/">Module 5</a>) and OpenMP offload (<a href="../06-omp-offload/">Module 6</a>)? When is explicit better?</p>
+</li>
+<li>
+<p>You have a CUDA code today and an AMD GPU cluster arriving next year. Estimate the relative effort of (a) porting the CUDA by hand to HIP versus (b) rewriting it in Kokkos now. What assumptions drive your answer?</p>
+</li>
+</ol>
+<details>
+<summary>Show solutions</summary>
+<p><strong>Question 1</strong>: Compile-time backend selection means the compiler sees a
+specific target and can optimize fully for it: CUDA lambdas are inlined into
+PTX, OpenMP pragmas are expanded into platform threads, and there is no
+virtual dispatch or runtime branching overhead. The binary is self-contained
+and carries no dead code for other backends. The cost is one binary per
+backend — you must rebuild to switch targets, and cross-platform testing
+requires separate compilation and execution environments. Runtime dispatch
+(as in some earlier portability layers) would let a single binary probe
+hardware and select a path, but at the cost of function-pointer overhead
+on every kernel call and the inability to use backend-specific compiler
+intrinsics.</p>
+<p><strong>Question 2</strong>: The private accumulator keeps the running total in a
+<strong>register</strong> — the fastest memory on the GPU. All <span class="arithmatex">\(N\)</span> multiply-add operations
+per output element happen on-chip with no global memory traffic until the
+single final write to <span class="arithmatex">\(C(i,j)\)</span>. The buggy in-place version issues a
+read-modify-write to a global memory location on every <span class="arithmatex">\(k\)</span> iteration. Even
+with L2 caching, this serializes through the memory hierarchy and, without
+atomic operations, races destructively. The private accumulator therefore
+reduces global memory transactions from <span class="arithmatex">\(O(N)\)</span> per output element to <span class="arithmatex">\(O(1)\)</span>,
+and eliminates all synchronization — both correctness and performance wins
+from the same change.</p>
+<p><strong>Question 3</strong>: Explicit host/device separation (Kokkos) gives you precise
+control: you choose exactly when data crosses the bus, can overlap transfers
+with computation using async deep copies, and never pay for a migration you
+did not request. Unified Memory (<code>std::par</code> GPU, OpenMP offload) migrates
+pages on first access, which is convenient but introduces unpredictable
+page-fault latency on the first kernel call and makes it difficult to reason
+about PCIe traffic from a profiler. Explicit is better when: data is large
+and accessed many times; transfer timing matters for overlap with computation;
+you are profiling or optimizing a production kernel. Unified Memory is better
+when prototyping, the data is small, or the algorithm's memory access pattern
+is irregular enough that explicit staging is difficult to express.</p>
+<p><strong>Question 4</strong>: Open-ended; key factors:
+(a) <em>CUDA→HIP by hand</em>: <code>hipify-perl</code> mechanically translates ~95% of the
+CUDA API surface in minutes. The remaining effort is manual: adjusting any
+code that relies on CUDA-specific behavior (warp size assumptions, specific
+atomic orderings, vendor libraries with no ROCm counterpart). For a small
+to mid-sized code, plan 1–5 days. But HIP is still GPU-specific code — the
+next target (Intel, ARM) requires another port.
+(b) <em>Rewrite in Kokkos now</em>: kernels must be restructured into lambdas or
+functors; raw <code>cudaMalloc</code>/<code>cudaMemcpy</code> become Views and <code>deep_copy</code>; shared
+memory becomes team scratch; warp intrinsics have Kokkos equivalents but
+differ in API. For the same mid-sized code, plan weeks. Future targets
+(HIP, SYCL, new NVIDIA archs) are then free — rebuild with a different flag.
+Key assumptions that drive the answer: (1) how many future retargets are
+anticipated — one more → hipify wins; three or more over five years → Kokkos
+likely pays off; (2) how heavily does the code use shared memory or warp
+intrinsics — light use → Kokkos port is mechanical; heavy use → expect
+significant restructuring; (3) how complete is your test suite — both paths
+require confident verification that the rewritten code produces identical
+results.</p>
+</details>
+<hr />
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<h3 id="reference-materials">Reference materials<a class="headerlink" href="#reference-materials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://github.com/kokkos/kokkos">Kokkos</a> — the performance-portability library.</li>
+<li><a href="https://kokkos.org/kokkos-core-wiki/">Kokkos documentation (Core Wiki)</a> — programming guide and API reference.</li>
+<li><a href="https://github.com/lanl/MATAR">MATAR</a> — the array/loop abstraction layered on top of Kokkos.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../07-mpi/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 7: MPI — Distributed Memory">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                7: MPI — Distributed Memory
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../09-profiling/" class="md-footer__link md-footer__link--next" aria-label="Next: 9: Profiling &amp; Performance Analysis">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                9: Profiling & Performance Analysis
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Developed at the High Performance Computing Collaboratory (HPC<sup>2</sup>), Mississippi State University — serving the University, State, and Nation through excellence in computational science and engineering.
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "content.code.annotate", "content.tabs.link", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,89 @@
+/* =========================================================================
+   Mississippi State University — High Performance Computing Collaboratory
+   (HPC^2) brand theme for Material for MkDocs.
+
+   Official palette (brand.msstate.edu):
+     MSU Maroon  #5D1725  (PMS 505)  — primary
+     Warm Gray   #A69F88  (PMS 428)  — accent
+   Brand rule: accent colors are only used alongside maroon, never alone.
+   ========================================================================= */
+
+:root {
+  --msu-maroon:        #5D1725;
+  --msu-maroon-light:  #7a2433;  /* hover / lighter chrome */
+  --msu-maroon-dark:   #44101a;  /* darker chrome */
+  --msu-maroon-tint:   #cf8a98;  /* legible maroon on dark backgrounds */
+  --msu-gray:          #A69F88;  /* official warm-gray accent */
+}
+
+/* -------------------------------------------------------------------------
+   Light mode — maroon on white
+   ------------------------------------------------------------------------- */
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color:        var(--msu-maroon);
+  --md-primary-fg-color--light: var(--msu-maroon-light);
+  --md-primary-fg-color--dark:  var(--msu-maroon-dark);
+  --md-primary-bg-color:        #ffffff;
+  --md-primary-bg-color--light: #ffffff;
+
+  --md-accent-fg-color:         var(--msu-maroon-light);
+
+  /* Body links in maroon */
+  --md-typeset-a-color:         var(--msu-maroon);
+}
+
+/* -------------------------------------------------------------------------
+   Dark mode (slate) — HPC^2 dark aesthetic, maroon header, legible links
+   ------------------------------------------------------------------------- */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color:        var(--msu-maroon);
+  --md-primary-fg-color--light: var(--msu-maroon-light);
+  --md-primary-fg-color--dark:  var(--msu-maroon-dark);
+  --md-primary-bg-color:        #ffffff;
+
+  /* Pure dark maroon is unreadable on a dark page; use a maroon tint for
+     links and a warm-gray accent for hover/highlights. */
+  --md-accent-fg-color:         var(--msu-gray);
+  --md-typeset-a-color:         var(--msu-maroon-tint);
+}
+
+/* -------------------------------------------------------------------------
+   Header logo — the MSU "M" emblem is a compact (~1.6:1) mark. Material's
+   default 1.2rem square crops it; bump the height a little and let the
+   width follow the aspect ratio.
+   ------------------------------------------------------------------------- */
+.md-header__button.md-logo img {
+  height: 2rem;
+  width: auto;
+}
+
+/* -------------------------------------------------------------------------
+   Footer attribution — keep the HPC^2 superscript tidy
+   ------------------------------------------------------------------------- */
+.md-footer-copyright sup {
+  font-size: 0.7em;
+  vertical-align: super;
+  line-height: 0;
+}
+
+/* -------------------------------------------------------------------------
+   Original tutorial tweaks (retained)
+   ------------------------------------------------------------------------- */
+
+/* Widen the solution admonition to make code more readable */
+.md-typeset .admonition.success,
+.md-typeset details.success {
+  border-color: #4caf50;
+}
+
+/* Keep code blocks from overflowing on narrow screens */
+.md-typeset pre code {
+  word-break: normal;
+  overflow-x: auto;
+}
+
+/* Emphasize TODO markers inside code blocks */
+.md-typeset code .c1,
+.md-typeset code .c {
+  font-style: italic;
+}

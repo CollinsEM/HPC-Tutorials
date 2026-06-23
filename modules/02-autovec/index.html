@@ -1,0 +1,1850 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A hands-on tutorial covering parallel programming models and best practices for high-performance computing on workstations and SLURM clusters.
+">
+      
+      
+      
+        <link rel="canonical" href="https://CollinsEM.github.io/HPC-Tutorials/modules/02-autovec/">
+      
+      
+        <link rel="prev" href="../01-hardware/">
+      
+      
+        <link rel="next" href="../03-openmp/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/hpc2.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>2: Auto-vectorization - Parallel Programming for HPC — A Practical Guide</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Open Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#module-2-auto-vectorization-and-the-stream-triad" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-header__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Parallel Programming for HPC — A Practical Guide
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              2: Auto-vectorization
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../00-parallel-theory/" class="md-tabs__link">
+          
+  
+  
+  Modules
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../running/workstation/" class="md-tabs__link">
+          
+  
+  
+  Running Code
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-nav__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    Parallel Programming for HPC — A Practical Guide
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modules
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-parallel-theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0: Parallel Computing Theory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-hardware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1: Hardware & Data Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2: Auto-vectorization
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2: Auto-vectorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-vectorization-simd-parallelism-on-a-single-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Vectorization: SIMD Parallelism on a Single Core
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Vectorization: SIMD Parallelism on a Single Core">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Terminology
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-vectorization-methods-ascending-programmer-effort" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Vectorization Methods (Ascending Programmer Effort)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-the-stream-triad-benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. The Stream Triad Benchmark
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. The Stream Triad Benchmark">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arithmetic-intensity-of-the-triad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arithmetic Intensity of the Triad
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-the-roofline-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. The Roofline Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-vectorization-flags-by-compiler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Vectorization Flags by Compiler
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-source-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Source Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Assignment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Assignment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tasks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-and-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build and Run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expected-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expected Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compiler-auto-vectorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler auto-vectorization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-openmp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3: OpenMP — CPU Parallelism
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-cuda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4: CUDA — GPU Programming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-stdpar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5: C++17 std::par
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-omp-offload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6: OpenMP Offload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-mpi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7: MPI — Distributed Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-kokkos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8: Kokkos & MATAR — Portability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-profiling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9: Profiling & Performance Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-valgrind/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10: Valgrind — Memory & Threading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-nsight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11: GPU Profiling with Nsight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Code
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Running Code
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/workstation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a Workstation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/slurm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a SLURM Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-vectorization-simd-parallelism-on-a-single-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Vectorization: SIMD Parallelism on a Single Core
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Vectorization: SIMD Parallelism on a Single Core">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Terminology
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-vectorization-methods-ascending-programmer-effort" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Vectorization Methods (Ascending Programmer Effort)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-the-stream-triad-benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. The Stream Triad Benchmark
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. The Stream Triad Benchmark">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arithmetic-intensity-of-the-triad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arithmetic Intensity of the Triad
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-the-roofline-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. The Roofline Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-vectorization-flags-by-compiler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Vectorization Flags by Compiler
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-source-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Source Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Assignment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Assignment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tasks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-and-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build and Run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expected-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expected Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compiler-auto-vectorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler auto-vectorization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="module-2-auto-vectorization-and-the-stream-triad">Module 2: Auto-Vectorization and the Stream Triad<a class="headerlink" href="#module-2-auto-vectorization-and-the-stream-triad" title="Permanent link">&para;</a></h1>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>By the end of this module you will be able to:</p>
+<ul>
+<li>Explain SIMD vectorization and why it matters for single-core performance</li>
+<li>Identify vectorization methods in ascending order of programmer effort</li>
+<li>Enable and verify compiler auto-vectorization using flags and diagnostic reports</li>
+<li>Measure memory bandwidth from timing output or hardware performance counters</li>
+<li>Interpret the roofline model and locate the Stream Triad on it</li>
+</ul>
+<hr />
+<h2 id="1-vectorization-simd-parallelism-on-a-single-core">1. Vectorization: SIMD Parallelism on a Single Core<a class="headerlink" href="#1-vectorization-simd-parallelism-on-a-single-core" title="Permanent link">&para;</a></h2>
+<p>Modern CPUs contain <em>vector units</em> — wide execution pipelines that apply a single
+instruction to multiple data elements simultaneously. This is called <strong>SIMD</strong>
+(Single Instruction, Multiple Data) parallelism.</p>
+<p>A scalar addition processes one <code>double</code> per cycle. A 512-bit vector unit
+(AVX-512) holds 8 doubles and processes all 8 in one instruction — an 8x
+throughput increase over scalar code, all on a single core, at no additional
+clock frequency.</p>
+<p>There is a convenient coincidence in the hardware: a 64-byte cache line holds
+exactly 8 doubles. A perfectly vectorized inner loop therefore processes one
+entire cache line per clock cycle.</p>
+<h3 id="key-terminology">Key Terminology<a class="headerlink" href="#key-terminology" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>Vector lane</em></td>
+<td>One element slot in a vector register (analogous to a lane on a freeway)</td>
+</tr>
+<tr>
+<td><em>Vector width</em></td>
+<td>Register width in bits: 128/256/512 for SSE/AVX/AVX-512</td>
+</tr>
+<tr>
+<td><em>Vector length</em></td>
+<td>Number of elements processed per instruction = width / element_size_bits</td>
+</tr>
+<tr>
+<td><em>SIMD instruction set</em></td>
+<td>SSE2, AVX, AVX2, AVX-512 on x86; NEON/SVE on ARM</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Two requirements for vectorization</p>
+<p>Vectorization requires both software and hardware support. The compiler must
+generate vector instructions <strong>and</strong> the CPU must implement the corresponding
+instruction set. Compiling with <code>-march=native</code> ensures the compiler targets
+the exact CPU you are running on. Targeting a broader ISA (e.g., generic SSE2
+for portability) leaves AVX-512 throughput on the table.</p>
+</div>
+<hr />
+<h2 id="2-vectorization-methods-ascending-programmer-effort">2. Vectorization Methods (Ascending Programmer Effort)<a class="headerlink" href="#2-vectorization-methods-ascending-programmer-effort" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Method</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Optimized libraries</strong> (BLAS, LAPACK, FFTW, Intel MKL)</td>
+<td>Already fully vectorized; use when the operation fits</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Auto-vectorization</strong></td>
+<td>Compiler analyzes loops and emits SIMD instructions automatically</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Compiler hints</strong> (<code>#pragma GCC ivdep</code>, <code>restrict</code>, OpenMP SIMD)</td>
+<td>Remove ambiguities that block auto-vectorization</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Vector intrinsics</strong> (<code>_mm512_add_pd</code>, etc.) — see the <a href="https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html">Intel Intrinsics Guide</a></td>
+<td>Explicit SIMD; portable across compilers, not across ISAs</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Assembler</strong></td>
+<td>Maximum control, zero portability</td>
+</tr>
+</tbody>
+</table>
+<p>Auto-vectorization is the recommended starting point. It requires zero code
+changes and handles the majority of loops correctly. Its limitation is that the
+compiler must make conservative assumptions: it does not know your array sizes at
+compile time and must assume that pointer arguments could alias each other. It
+therefore sometimes declines to vectorize even when it would be safe to do so.
+The higher levels of the table exist to overcome those conservative assumptions.</p>
+<hr />
+<h2 id="3-the-stream-triad-benchmark">3. The Stream Triad Benchmark<a class="headerlink" href="#3-the-stream-triad-benchmark" title="Permanent link">&para;</a></h2>
+<p>The <a href="https://www.cs.virginia.edu/stream/"><strong>STREAM benchmark</strong></a> is the standard measure of <em>sustainable</em> memory
+bandwidth — the bandwidth a real application can sustain, as opposed to the
+theoretical peak stated in a hardware datasheet. The <strong>Triad</strong> kernel is:</p>
+<div class="arithmatex">\[A[i] = B[i] + \alpha \times C[i]\]</div>
+<p>where <span class="arithmatex">\(A\)</span>, <span class="arithmatex">\(B\)</span>, <span class="arithmatex">\(C\)</span> are large arrays (much larger than any cache level) and
+<span class="arithmatex">\(\alpha\)</span> is a scalar constant. The arrays must be large enough that no useful
+data remains in cache at the start of each iteration; otherwise the benchmark
+measures cache bandwidth rather than DRAM bandwidth.</p>
+<h3 id="arithmetic-intensity-of-the-triad">Arithmetic Intensity of the Triad<a class="headerlink" href="#arithmetic-intensity-of-the-triad" title="Permanent link">&para;</a></h3>
+<p>For each element <span class="arithmatex">\(i\)</span>:</p>
+<ul>
+<li><strong>Floating-point operations</strong>: 1 multiply (<span class="arithmatex">\(\alpha \times C[i]\)</span>) + 1 add = <strong>2 FLOP</strong></li>
+<li><strong>Memory traffic</strong>: read <span class="arithmatex">\(B[i]\)</span> + read <span class="arithmatex">\(C[i]\)</span> + write <span class="arithmatex">\(A[i]\)</span> = <span class="arithmatex">\(3 \times 8\)</span> bytes = <strong>24 bytes</strong></li>
+</ul>
+<div class="arithmatex">\[I = \frac{2 \text{ FLOP}}{24 \text{ bytes}} \approx 0.083 \text{ FLOP/byte}\]</div>
+<p>This is an extremely low arithmetic intensity. On nearly every machine the Triad
+falls deep in the bandwidth-limited region of the roofline model: adding more
+floating-point hardware cannot help because the bottleneck is moving data from
+DRAM to the CPU.</p>
+<hr />
+<h2 id="4-the-roofline-model">4. The Roofline Model<a class="headerlink" href="#4-the-roofline-model" title="Permanent link">&para;</a></h2>
+<p>The <a href="https://doi.org/10.1145/1498765.1498785"><strong>Roofline model</strong></a> is a visual performance bound that answers the question:
+<em>given this hardware, what is the maximum attainable performance for a kernel
+with this arithmetic intensity?</em></p>
+<p>The model plots attainable FLOP/s (y-axis, log scale) against arithmetic
+intensity (FLOP/byte, x-axis, log scale). Two bounds define the "roofline":</p>
+<ul>
+<li><strong>Bandwidth ceiling</strong> (diagonal): <span class="arithmatex">\(\text{attainable FLOP/s} = I \times B_\text{peak}\)</span>,
+  where <span class="arithmatex">\(B_\text{peak}\)</span> is peak memory bandwidth in GB/s.</li>
+<li><strong>Compute ceiling</strong> (horizontal): <span class="arithmatex">\(P_\text{peak}\)</span>, the processor's peak
+  floating-point throughput.</li>
+</ul>
+<p>The intersection of the two ceilings is the <strong>ridge point</strong>. Kernels whose
+arithmetic intensity falls to the left of the ridge point are
+<em>bandwidth-bound</em>; kernels to the right are <em>compute-bound</em>.</p>
+<p>The Stream Triad, with <span class="arithmatex">\(I \approx 0.08\)</span> FLOP/byte, always falls far to the left
+of the ridge point on modern hardware. Its performance ceiling is:</p>
+<div class="arithmatex">\[\text{Triad}_\text{peak} = 0.083 \text{ FLOP/byte} \times B_\text{peak} \text{ GB/s}\]</div>
+<div class="admonition tip">
+<p class="admonition-title">Implication for optimization</p>
+<p>Because the Triad is bandwidth-bound, vectorization and instruction-level
+tricks cannot raise it above the bandwidth ceiling. The only levers are:
+reducing data movement (e.g., fusing loops to reuse data in cache) or
+increasing arithmetic reuse (increasing <span class="arithmatex">\(I\)</span>). Vectorization can still help
+by ensuring the hardware's prefetch and load units are fully utilized, but
+gains are modest compared to a compute-bound kernel.</p>
+</div>
+<hr />
+<h2 id="5-vectorization-flags-by-compiler">5. Vectorization Flags by Compiler<a class="headerlink" href="#5-vectorization-flags-by-compiler" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Compiler</th>
+<th>Vectorization flags</th>
+<th>Report flag</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://gcc.gnu.org/projects/tree-ssa/vectorization.html">GCC</a></td>
+<td><code>-O3 -ftree-vectorize -march=native</code></td>
+<td><code>-fopt-info-vec-optimized</code></td>
+</tr>
+<tr>
+<td>GCC 8+</td>
+<td>add <code>-mprefer-vector-width=512</code> for AVX-512 preference</td>
+<td>same</td>
+</tr>
+<tr>
+<td>Clang</td>
+<td><code>-O3 -fvectorize -march=native</code></td>
+<td><code>-Rpass-analysis=loop-vectorize</code></td>
+</tr>
+<tr>
+<td>Intel icc</td>
+<td><code>-O3 -xHost -restrict</code></td>
+<td><code>-qopt-report=5 -qopt-report-phase=vec</code></td>
+</tr>
+<tr>
+<td>Intel 18+</td>
+<td>add <code>-qopt-zmm-usage=high</code> to prefer 512-bit registers</td>
+<td>same</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">CMakeLists.txt in this example</p>
+<p><code>examples/autovec/CMakeLists.txt</code> already contains the GCC and Clang flag
+blocks; they are commented out by default so you can toggle them on and
+observe the effect. The Intel block is active when <code>icc</code> is detected.</p>
+</div>
+<hr />
+<h2 id="6-source-code">6. Source Code<a class="headerlink" href="#6-source-code" title="Permanent link">&para;</a></h2>
+<p>The full source is at <code>examples/autovec/stream_triad.c</code>:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// To run with Likwid, use the following command:</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="c1">// likwid-perfctr -C 0 -g MEM1 ./stream_triad</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;timer.h&quot;</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="cp">#define NTIMES 16</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1">// large enough to force into main memory</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="cp">#define STREAM_ARRAY_SIZE 800000</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="k">static</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">a</span><span class="p">[</span><span class="n">STREAM_ARRAY_SIZE</span><span class="p">],</span><span class="w"> </span><span class="n">b</span><span class="p">[</span><span class="n">STREAM_ARRAY_SIZE</span><span class="p">],</span><span class="w"> </span><span class="n">c</span><span class="p">[</span><span class="n">STREAM_ARRAY_SIZE</span><span class="p">];</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">argv</span><span class="p">[]){</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">tstart</span><span class="p">;</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.0</span><span class="p">,</span><span class="w"> </span><span class="n">time_sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">STREAM_ARRAY_SIZE</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">    </span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0</span><span class="p">;</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">NTIMES</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="o">++</span><span class="p">){</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">    </span><span class="n">cpu_timer_start</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tstart</span><span class="p">);</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">STREAM_ARRAY_SIZE</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">){</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">      </span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">scalar</span><span class="o">*</span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">    </span><span class="n">time_sum</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">cpu_timer_stop</span><span class="p">(</span><span class="n">tstart</span><span class="p">);</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="w">    </span><span class="c1">// prevent the compiler from optimizing out the loop</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="w">    </span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Average runtime is %lf msecs</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">time_sum</span><span class="o">/</span><span class="n">NTIMES</span><span class="p">);</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>Several details are worth noting:</p>
+<ul>
+<li><strong>Static allocation</strong>: <code>a</code>, <code>b</code>, <code>c</code> are declared <code>static</code> at file scope.
+  This guarantees they are contiguous in the BSS segment and aligned to at least
+  8-byte boundaries, which is a prerequisite for many SIMD load/store
+  instructions.</li>
+<li><strong>NTIMES averaging</strong>: The Triad runs 16 times and the reported runtime is the
+  average. The first iteration may be slower due to cold-cache effects and OS
+  page faults; averaging over 16 runs captures the steady-state bandwidth.</li>
+<li><strong>Dead-code prevention</strong>: <code>c[1] = c[2]</code> after each iteration creates a
+  data dependency on the array that the compiler cannot eliminate. Without it, a
+  sufficiently aggressive optimizer could determine that <code>c</code> is never read after
+  the loop and delete the Triad entirely.</li>
+</ul>
+<hr />
+<h2 id="7-assignment">7. Assignment<a class="headerlink" href="#7-assignment" title="Permanent link">&para;</a></h2>
+<h3 id="tasks">Tasks<a class="headerlink" href="#tasks" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Baseline</strong>: Build and run the unmodified code. Record the average runtime.</p>
+</li>
+<li>
+<p><strong>Topology inspection</strong>: Inspect your system's cache hierarchy and core layout.
+   Note the L1/L2/L3 sizes and the number of physical cores.
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>lscpu<span class="w">                    </span><span class="c1"># cache sizes, core count, NUMA layout (always available)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>likwid-topology<span class="w"> </span>-g<span class="w">       </span><span class="c1"># richer graphical view (if LIKWID is installed)</span>
+</span></code></pre></div></p>
+</li>
+<li>
+<p><strong>Bandwidth measurement</strong>: Run with LIKWID memory performance counters to
+   observe the actual DRAM bandwidth during the Triad:
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>likwid-perfctr<span class="w"> </span>-C<span class="w"> </span><span class="m">0</span><span class="w"> </span>-g<span class="w"> </span>MEM1<span class="w"> </span>./stream_triad
+</span></code></pre></div>
+   Record the reported bandwidth in GB/s. (LIKWID's counters need a one-time
+   privileged setup; on clusters try <code>module load likwid</code>. If LIKWID is
+   unavailable, skip to the bandwidth-from-timing calculation under <em>Expected
+   Output</em> below — it needs no special tools or privileges.)</p>
+</li>
+<li>
+<p><strong>Enable vectorization</strong>: Open <code>examples/autovec/CMakeLists.txt</code>. Uncomment
+   the GCC flags <code>-fstrict-aliasing -ftree-vectorize -march=native
+   -fopt-info-vec-optimized</code> in the GNU block. Rebuild and run. The
+   <code>-fopt-info-vec-optimized</code> flag prints a line for each loop that was
+   successfully vectorized; verify it reports the Triad loop.</p>
+</li>
+<li>
+<p><strong>(GCC 8+) Prefer 512-bit</strong>: Uncomment <code>-mprefer-vector-width=512</code>. Rebuild
+   and measure again.</p>
+</li>
+<li>
+<p><strong>Tabulate results</strong>: For each build (baseline, vectorized, AVX-512
+   preferred), record: average runtime, vectorization report output, achieved
+   bandwidth computed from the runtime (and LIKWID MEM1 bandwidth if available),
+   and bandwidth as a fraction of theoretical peak.</p>
+</li>
+</ol>
+<h3 id="build-and-run">Build and Run<a class="headerlink" href="#build-and-run" title="Permanent link">&para;</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Workstation</label><label for="__tabbed_1_2">SLURM cluster</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>See <a href="../../running/workstation/">Running on a Workstation</a> for the toolchain
+prerequisites; then, from the repository root:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">cd</span><span class="w"> </span>examples/autovec
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>mkdir<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>cmake<span class="w"> </span>..<span class="w"> </span>-DCMAKE_BUILD_TYPE<span class="o">=</span>Release
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>make
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>./stream_triad
+</span></code></pre></div></p>
+</div>
+<div class="tabbed-block">
+<p>Submit the provided job script:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>sbatch<span class="w"> </span>examples/autovec/run.slurm
+</span></code></pre></div>
+The script pins the process to a single core and requests exclusive node
+access to avoid bandwidth contention from other jobs. See
+<a href="../../running/slurm/">Running on a SLURM Cluster</a> for the general
+submit/monitor workflow and how to adapt module and partition names.</p>
+</div>
+</div>
+</div>
+<h3 id="expected-output">Expected Output<a class="headerlink" href="#expected-output" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Average runtime is 1.234567 msecs
+</span></code></pre></div>
+<p>Compute the achieved bandwidth from the runtime:</p>
+<div class="arithmatex">\[B = \frac{3 \times 800000 \times 8 \text{ bytes}}{t_\text{s} \times 10^9} \text{ GB/s}\]</div>
+<p>where <span class="arithmatex">\(t_\text{s}\)</span> is the average runtime in seconds. Compare to the bandwidth
+reported by LIKWID and to the theoretical peak for your system.</p>
+<h3 id="discussion-questions">Discussion Questions<a class="headerlink" href="#discussion-questions" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>What is the arithmetic intensity of the Stream Triad? Locate it on the
+   roofline model for your machine. Is it bandwidth-bound or compute-bound?</p>
+</li>
+<li>
+<p>Did enabling vectorization change the runtime? By how much? Does the compiler
+   report (<code>-fopt-info-vec-optimized</code>) confirm that the Triad loop was
+   vectorized?</p>
+</li>
+<li>
+<p>What would happen to performance if pointers <code>a</code>, <code>b</code>, <code>c</code> could alias each
+   other? Add the <code>restrict</code> keyword to the function signature and observe
+   whether the compiler report changes. (The static arrays in this example
+   cannot actually alias, but the compiler does not always know that.)</p>
+</li>
+</ol>
+<details>
+<summary>Show solutions</summary>
+<p><strong>Question 1</strong>: The Stream Triad performs 2 FLOPs (one multiply, one add)
+while reading 24 bytes and writing 8 bytes (arrays <code>a</code>, <code>b</code>, <code>c</code> of doubles)
+— 32 bytes total per element. Arithmetic intensity = 2 / 32 = 0.0625 FLOP/byte,
+or roughly 1/16. On any modern processor this sits far to the <em>left</em> of the
+ridge point on the roofline, firmly in the <strong>bandwidth-bound</strong> regime. No
+amount of extra FLOPs/s helps; the bottleneck is how fast data can move
+through the memory hierarchy.</p>
+<p><strong>Question 2</strong>: Experiment-dependent; your numbers will vary by CPU. Vectorization
+typically yields a 1.5–3× improvement for a bandwidth-bound loop like this,
+less than the theoretical SIMD width (4× for AVX with 256-bit registers, 8×
+for AVX-512) because the loop is limited by memory bandwidth, not instruction
+throughput. The compiler report (<code>-fopt-info-vec-optimized</code>) should include a
+line such as <code>stream_triad.c:NN: note: loop vectorized</code>. If it does not appear,
+check for aliasing warnings (see Question 3) or missing <code>-O2</code>/<code>-O3</code>.</p>
+<p><strong>Question 3</strong>: Without <code>restrict</code>, the compiler must assume <code>a</code>, <code>b</code>, and <code>c</code>
+could point to overlapping memory. Writing to <code>c[i]</code> might change the value of
+<code>a[i+1]</code> on the next iteration, which would make it unsafe to reorder or batch
+loads into a SIMD vector. This forces scalar execution or limits the compiler
+to narrower vectorization windows. Adding <code>__restrict__</code> (GCC/Clang) or
+<code>restrict</code> (C99) tells the compiler the pointers are disjoint; the vectorization
+report typically changes from "not vectorized: possible aliasing" to "loop
+vectorized." For the static arrays in this example the compiler can often prove
+non-aliasing on its own, but for pointer arguments to functions it generally
+cannot without the annotation.</p>
+</details>
+<hr />
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<h3 id="reference-materials">Reference materials<a class="headerlink" href="#reference-materials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://www.cs.virginia.edu/stream/">STREAM benchmark</a> — John McCalpin's sustainable-memory-bandwidth benchmark.</li>
+<li><a href="https://doi.org/10.1145/1498765.1498785">Roofline model</a> — Williams, Waterman &amp; Patterson, <em>Communications of the ACM</em>, 2009.</li>
+<li><a href="https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html">Intel Intrinsics Guide</a> — searchable reference for SIMD intrinsics.</li>
+<li><a href="https://github.com/RRZE-HPC/likwid/wiki">LIKWID</a> — performance-counter and topology tools (used in <a href="../09-profiling/">Module 9</a>).</li>
+</ul>
+<h3 id="compiler-auto-vectorization">Compiler auto-vectorization<a class="headerlink" href="#compiler-auto-vectorization" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://gcc.gnu.org/projects/tree-ssa/vectorization.html">GCC</a></li>
+<li><a href="https://llvm.org/docs/Vectorizers.html">Clang / LLVM</a></li>
+<li><a href="https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/current/automatic-vectorization.html">Intel oneAPI</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../01-hardware/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 1: Hardware &amp; Data Layout">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                1: Hardware & Data Layout
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../03-openmp/" class="md-footer__link md-footer__link--next" aria-label="Next: 3: OpenMP — CPU Parallelism">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                3: OpenMP — CPU Parallelism
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Developed at the High Performance Computing Collaboratory (HPC<sup>2</sup>), Mississippi State University — serving the University, State, and Nation through excellence in computational science and engineering.
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "content.code.annotate", "content.tabs.link", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1823 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A hands-on tutorial covering parallel programming models and best practices for high-performance computing on workstations and SLURM clusters.
+">
+      
+      
+      
+        <link rel="canonical" href="https://CollinsEM.github.io/HPC-Tutorials/modules/10-valgrind/">
+      
+      
+        <link rel="prev" href="../09-profiling/">
+      
+      
+        <link rel="next" href="../11-nsight/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/hpc2.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>10: Valgrind — Memory & Threading - Parallel Programming for HPC — A Practical Guide</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Open Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#module-10-valgrind-memory-threading-debugging" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-header__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Parallel Programming for HPC — A Practical Guide
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              10: Valgrind — Memory & Threading
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../00-parallel-theory/" class="md-tabs__link">
+          
+  
+  
+  Modules
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../running/workstation/" class="md-tabs__link">
+          
+  
+  
+  Running Code
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-nav__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    Parallel Programming for HPC — A Practical Guide
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modules
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-parallel-theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0: Parallel Computing Theory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-hardware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1: Hardware & Data Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-autovec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2: Auto-vectorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-openmp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3: OpenMP — CPU Parallelism
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-cuda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4: CUDA — GPU Programming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-stdpar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5: C++17 std::par
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-omp-offload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6: OpenMP Offload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-mpi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7: MPI — Distributed Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-kokkos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8: Kokkos & MATAR — Portability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-profiling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9: Profiling & Performance Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10: Valgrind — Memory & Threading
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10: Valgrind — Memory & Threading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-valgrind-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Valgrind Is
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memcheck-memory-correctness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        memcheck — Memory Correctness
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="memcheck — Memory Correctness">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reading-the-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the output
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#helgrind-drd-data-races" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        helgrind &amp; DRD — Data Races
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cachegrind-callgrind-where-the-time-goes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cachegrind &amp; callgrind — Where the Time Goes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="cachegrind &amp; callgrind — Where the Time Goes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#callgrind-hotspots-and-call-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        callgrind — hotspots and call graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cachegrind-cache-and-branch-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cachegrind — cache and branch simulation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#massif-heap-profiling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        massif — Heap Profiling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-bug-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Bug Patterns
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#valgrind-tool-manuals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Valgrind tool manuals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compiler-sanitizers-alternatives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler sanitizers (alternatives)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-nsight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11: GPU Profiling with Nsight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Code
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Running Code
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/workstation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a Workstation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/slurm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a SLURM Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-valgrind-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Valgrind Is
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memcheck-memory-correctness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        memcheck — Memory Correctness
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="memcheck — Memory Correctness">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reading-the-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the output
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#helgrind-drd-data-races" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        helgrind &amp; DRD — Data Races
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cachegrind-callgrind-where-the-time-goes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cachegrind &amp; callgrind — Where the Time Goes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="cachegrind &amp; callgrind — Where the Time Goes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#callgrind-hotspots-and-call-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        callgrind — hotspots and call graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cachegrind-cache-and-branch-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cachegrind — cache and branch simulation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#massif-heap-profiling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        massif — Heap Profiling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-bug-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Bug Patterns
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#valgrind-tool-manuals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Valgrind tool manuals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compiler-sanitizers-alternatives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compiler sanitizers (alternatives)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="module-10-valgrind-memory-threading-debugging">Module 10: Valgrind — Memory &amp; Threading Debugging<a class="headerlink" href="#module-10-valgrind-memory-threading-debugging" title="Permanent link">&para;</a></h1>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>By the end of this module you will be able to:</p>
+<ul>
+<li>Explain what Valgrind instruments and why it is slow but thorough</li>
+<li>Find leaks, invalid accesses, and uninitialized reads with <strong>memcheck</strong></li>
+<li>Detect data races and lock errors with <strong>helgrind</strong> and <strong>DRD</strong></li>
+<li>Profile cache behavior and hotspots with <strong>cachegrind</strong> and <strong>callgrind</strong></li>
+<li>Track heap growth with <strong>massif</strong></li>
+<li>Apply best practices: build flags, suppressions, and a fix-the-first-error discipline</li>
+</ul>
+<hr />
+<h2 id="what-valgrind-is">What Valgrind Is<a class="headerlink" href="#what-valgrind-is" title="Permanent link">&para;</a></h2>
+<p><a href="https://valgrind.org/docs/manual/">Valgrind</a> is a <em>dynamic binary instrumentation</em> framework. It runs your program on a synthetic CPU, watching every memory access and instruction. That makes it 10–50× slower than native execution, but it needs no special privileges and catches bugs that only manifest at runtime — the ones that cause wrong answers, sporadic crashes, or the nondeterministic results that masquerade as "performance" problems.</p>
+<p>Valgrind is a collection of tools selected with <code>--tool=</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Finds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>memcheck</code> (default)</td>
+<td>leaks, invalid/uninitialized memory access</td>
+</tr>
+<tr>
+<td><code>helgrind</code></td>
+<td>data races, lock-ordering errors</td>
+</tr>
+<tr>
+<td><code>drd</code></td>
+<td>data races (lower overhead, different heuristics)</td>
+</tr>
+<tr>
+<td><code>cachegrind</code></td>
+<td>cache misses, branch mispredictions (simulated)</td>
+</tr>
+<tr>
+<td><code>callgrind</code></td>
+<td>call-graph hotspots (+ optional cache sim)</td>
+</tr>
+<tr>
+<td><code>massif</code></td>
+<td>heap memory growth over time</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Valgrind is CPU-only</p>
+<p>Valgrind instruments host CPU instructions. It cannot see inside a CUDA/HIP kernel or measure GPU memory. For GPU code use the Nsight tools in <a href="../11-nsight/">Module 11</a>; for native CPU hardware counters use LIKWID or <code>perf</code> as described in <a href="../09-profiling/">Module 9</a>.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">If Valgrind is not installed — compiler sanitizers</p>
+<p>GCC ≥ 4.8 and Clang ≥ 3.1 ship built-in sanitizers that cover the most
+common Valgrind use cases at a fraction of the overhead. No external tool
+is needed — just recompile:</p>
+<table>
+<thead>
+<tr>
+<th>Valgrind tool</th>
+<th>Compiler sanitizer</th>
+<th>Flag</th>
+<th>Overhead</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>memcheck</code> (invalid access, leaks)</td>
+<td>AddressSanitizer (ASan)</td>
+<td><code>-fsanitize=address -fno-omit-frame-pointer</code></td>
+<td>~2×</td>
+</tr>
+<tr>
+<td><code>memcheck --track-origins</code> (uninitialized reads)</td>
+<td>MemorySanitizer (MSan)</td>
+<td><code>-fsanitize=memory</code></td>
+<td>~3× (Clang only)</td>
+</tr>
+<tr>
+<td><code>helgrind</code> / <code>drd</code> (data races)</td>
+<td>ThreadSanitizer (TSan)</td>
+<td><code>-fsanitize=thread</code></td>
+<td>~5–15×</td>
+</tr>
+<tr>
+<td><code>cachegrind</code> (cache misses)</td>
+<td>No direct equivalent; use <code>perf stat -e cache-misses</code></td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>callgrind</code> (hotspots)</td>
+<td><code>gprof</code> (<code>-pg</code>) or <code>perf record</code>/<code>perf report</code></td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Sanitizers are usually the first choice on a developer workstation because
+they are faster, easier to set up, and produce actionable error messages.
+Valgrind's <code>cachegrind</code> and <code>callgrind</code> remain useful on clusters where
+compiler versions are older or <code>perf</code> access requires elevated permissions.</p>
+<p>ASan example:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>gcc<span class="w"> </span>-g<span class="w"> </span>-O1<span class="w"> </span>-fsanitize<span class="o">=</span>address<span class="w"> </span>-fno-omit-frame-pointer<span class="w"> </span>stream_triad.c<span class="w"> </span>timer.c<span class="w"> </span>-o<span class="w"> </span>stream_triad_asan
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>./stream_triad_asan
+</span></code></pre></div>
+TSan example (for a threaded program):
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>gcc<span class="w"> </span>-g<span class="w"> </span>-O1<span class="w"> </span>-fsanitize<span class="o">=</span>thread<span class="w"> </span>your_omp_program.c<span class="w"> </span>-fopenmp<span class="w"> </span>-o<span class="w"> </span>prog_tsan
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>./prog_tsan
+</span></code></pre></div>
+ASan and TSan cannot be used together in the same binary. Run separate
+builds for memory and threading checks.</p>
+</div>
+<hr />
+<h2 id="memcheck-memory-correctness">memcheck — Memory Correctness<a class="headerlink" href="#memcheck-memory-correctness" title="Permanent link">&para;</a></h2>
+<p>The default tool. Build with debug symbols (<code>-g</code>) so reports carry file and line numbers, and prefer a light optimization level — <code>-O1</code> keeps line mapping honest while staying realistic, whereas <code>-O0</code> changes behavior and <code>-O2</code>/<code>-O3</code> can inline away the lines you need:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gcc<span class="w"> </span>-g<span class="w"> </span>-O1<span class="w"> </span>stream_triad.c<span class="w"> </span>timer.c<span class="w"> </span>-o<span class="w"> </span>stream_triad
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>valgrind<span class="w"> </span>--leak-check<span class="o">=</span>full<span class="w"> </span>--show-leak-kinds<span class="o">=</span>all<span class="w"> </span>--track-origins<span class="o">=</span>yes<span class="w"> </span>./stream_triad
+</span></code></pre></div>
+<p>Key options:</p>
+<ul>
+<li><code>--leak-check=full</code> — report each leaking allocation with its stack trace.</li>
+<li><code>--show-leak-kinds=all</code> — include <em>definitely</em>, <em>indirectly</em>, <em>possibly</em>, and <em>still-reachable</em> leaks.</li>
+<li><code>--track-origins=yes</code> — for uninitialized-value errors, trace back to where the bad value came from (slower, but worth it).</li>
+</ul>
+<h3 id="reading-the-output">Reading the output<a class="headerlink" href="#reading-the-output" title="Permanent link">&para;</a></h3>
+<p>memcheck reports each error with the offending stack and a category. The ones you will see most:</p>
+<ul>
+<li><strong>Invalid read/write of size N</strong> — out-of-bounds access (heap overrun, off-by-one).</li>
+<li><strong>Conditional jump depends on uninitialised value</strong> — you read memory you never wrote (a classic: an accumulator declared but not zeroed).</li>
+<li><strong>N bytes definitely lost</strong> — a leak: allocated, never freed, no surviving pointer.</li>
+<li><strong>Mismatched free() / delete</strong> — <code>free</code> on <code>new</code>, or <code>delete</code> on <code>malloc</code>.</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Fix the first error first</p>
+<p>Memory errors cascade — one bad write corrupts state and spawns dozens of downstream reports. Always fix the <em>first</em> reported error, then re-run. Half your error list often vanishes.</p>
+</div>
+<p>The leak summary distinguishes <em>definitely lost</em> (no pointer remains — a real bug) from <em>still reachable</em> (a pointer exists at exit — usually a global never freed, often benign). Focus on the former.</p>
+<hr />
+<h2 id="helgrind-drd-data-races">helgrind &amp; DRD — Data Races<a class="headerlink" href="#helgrind-drd-data-races" title="Permanent link">&para;</a></h2>
+<p>Memory correctness is only half the story for parallel code; the other half is <strong>threading correctness</strong>. A data race — two threads accessing the same location concurrently with at least one write, and no synchronization — produces nondeterministic, backend-dependent results. That is exactly the failure mode of the <a href="../08-kokkos/">MATAR <code>FOR_ALL</code> race in Module 8</a>, where parallelizing the <code>k</code> reduction made multiple threads update <code>C(i,j)</code> at once.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Compile the OpenMP/threaded program, then:</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>valgrind<span class="w"> </span>--tool<span class="o">=</span>helgrind<span class="w"> </span>./your_threaded_program
+</span></code></pre></div>
+<p>helgrind reports "Possible data race during write of size N" with the two conflicting stacks — the two threads and the unsynchronized location. DRD is an alternative with lower memory overhead:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>valgrind<span class="w"> </span>--tool<span class="o">=</span>drd<span class="w"> </span>./your_threaded_program
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Threading runtimes generate noise</p>
+<p>OpenMP and pthread runtimes do their own lock-free synchronization that helgrind cannot always reason about, so you will see false positives from inside <code>libgomp</code>/<code>libpthread</code>. Suppress them (below) so the real races in <em>your</em> code stand out. For OpenMP specifically, compiling with a helgrind-aware runtime or annotating with <code>ANNOTATE_*</code> macros reduces the noise.</p>
+</div>
+<p>This is the tool to reach for when an OpenMP loop (<a href="../03-openmp/">Module 3</a>) gives different answers on different runs, or when you suspect a missing <code>reduction</code>/<code>critical</code> clause.</p>
+<hr />
+<h2 id="cachegrind-callgrind-where-the-time-goes">cachegrind &amp; callgrind — Where the Time Goes<a class="headerlink" href="#cachegrind-callgrind-where-the-time-goes" title="Permanent link">&para;</a></h2>
+<h3 id="callgrind-hotspots-and-call-graph">callgrind — hotspots and call graph<a class="headerlink" href="#callgrind-hotspots-and-call-graph" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>valgrind<span class="w"> </span>--tool<span class="o">=</span>callgrind<span class="w"> </span>--callgrind-out-file<span class="o">=</span>callgrind.out<span class="w"> </span>./stream_triad
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>callgrind_annotate<span class="w"> </span>callgrind.out
+</span></code></pre></div>
+<p><code>callgrind_annotate</code> ranks functions by instruction count with per-line detail; <a href="https://kcachegrind.github.io/"><strong>KCachegrind</strong></a> opens <code>callgrind.out</code> as an interactive call graph. Add <code>--cache-sim=yes --branch-sim=yes</code> to also model cache and branch behavior in the same run.</p>
+<h3 id="cachegrind-cache-and-branch-simulation">cachegrind — cache and branch simulation<a class="headerlink" href="#cachegrind-cache-and-branch-simulation" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>valgrind<span class="w"> </span>--tool<span class="o">=</span>cachegrind<span class="w"> </span>./stream_triad
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>cg_annotate<span class="w"> </span>cachegrind.out.&lt;pid&gt;
+</span></code></pre></div>
+<p>cachegrind reports I1/D1/LL miss rates per function and per line — the tool to confirm a suspected cache problem, such as a strided access or an <a href="../01-hardware/">array-of-structs layout</a> thrashing the cache.</p>
+<div class="admonition warning">
+<p class="admonition-title">Simulated, not measured</p>
+<p>cachegrind models a <em>generic</em> two-level cache and ignores hardware prefetchers and out-of-order execution. Use it for <em>relative</em> comparisons (this loop misses far more than that one); use LIKWID's hardware counters (<a href="../09-profiling/">Module 9</a>) for <em>absolute</em> numbers on real silicon.</p>
+</div>
+<hr />
+<h2 id="massif-heap-profiling">massif — Heap Profiling<a class="headerlink" href="#massif-heap-profiling" title="Permanent link">&para;</a></h2>
+<p>When a program's memory footprint grows unexpectedly, massif samples the heap over time:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>valgrind<span class="w"> </span>--tool<span class="o">=</span>massif<span class="w"> </span>./your_program
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>ms_print<span class="w"> </span>massif.out.&lt;pid&gt;
+</span></code></pre></div>
+<p><code>ms_print</code> draws an ASCII graph of heap usage against time and lists the call sites responsible for the peak. Use it to find a leak that <em>isn't</em> technically lost (memory that keeps growing but is still reachable), or to right-size allocations.</p>
+<hr />
+<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Build with <code>-g</code> and <code>-O1</code>.</strong> Debug symbols give line numbers; <code>-O1</code> keeps them trustworthy. Avoid <code>-O0</code> (unrealistic) and heavy <code>-O2</code>/<code>-O3</code> inlining (loses lines) while debugging.</li>
+<li><strong>Shrink the problem.</strong> Valgrind's slowdown makes full-scale runs painful. Reproduce the bug with the smallest input that still triggers it — drop <code>STREAM_ARRAY_SIZE</code>, <code>NumPatients</code>, or iteration counts.</li>
+<li><strong>Use suppressions for known noise.</strong> MPI, OpenMP, and CUDA runtimes trip false positives. Capture them once with <code>--gen-suppressions=all</code> and feed them back via <code>--suppressions=my.supp</code> so real bugs are not buried.</li>
+<li><strong>Fix top-down.</strong> The first error often causes the rest; re-run after each fix.</li>
+<li><strong>Make it routine, not a last resort.</strong> A clean memcheck run before committing catches the off-by-one that would otherwise become a production crash.</li>
+</ul>
+<hr />
+<h2 id="common-bug-patterns">Common Bug Patterns<a class="headerlink" href="#common-bug-patterns" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Likely cause</th>
+<th>Tool</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wrong result, "uninitialised value"</td>
+<td>accumulator declared but not zeroed</td>
+<td>memcheck <code>--track-origins</code></td>
+</tr>
+<tr>
+<td>Sporadic crash near an array</td>
+<td>off-by-one heap overrun</td>
+<td>memcheck</td>
+</tr>
+<tr>
+<td>Memory grows until OOM</td>
+<td>leak in an error/retry path</td>
+<td>memcheck <code>--leak-check=full</code>, massif</td>
+</tr>
+<tr>
+<td>Result changes run-to-run (threads)</td>
+<td>missing <code>reduction</code>/lock; data race</td>
+<td>helgrind / DRD</td>
+</tr>
+<tr>
+<td>Use-after-free / double free</td>
+<td>freeing in a loop or destructor twice</td>
+<td>memcheck</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="assignment">Assignment<a class="headerlink" href="#assignment" title="Permanent link">&para;</a></h2>
+<p>Tasks 1–3 can be completed with either Valgrind or compiler sanitizers. Where
+both options are shown, try both and compare the error messages.</p>
+<ol>
+<li>
+<p><strong>Clean baseline.</strong> Build <code>examples/autovec/stream_triad.c</code> with <code>-g -O1</code> and check for memory errors. It should be clean — confirm there are no invalid accesses, and note the "still reachable" total (the static arrays).
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># With Valgrind:</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>valgrind<span class="w"> </span>--leak-check<span class="o">=</span>full<span class="w"> </span>--show-leak-kinds<span class="o">=</span>all<span class="w"> </span>./stream_triad
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># With AddressSanitizer (no Valgrind needed):</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>gcc<span class="w"> </span>-g<span class="w"> </span>-O1<span class="w"> </span>-fsanitize<span class="o">=</span>address<span class="w"> </span>-fno-omit-frame-pointer<span class="w"> </span>stream_triad.c<span class="w"> </span>timer.c<span class="w"> </span>-o<span class="w"> </span>stream_triad_asan
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>./stream_triad_asan
+</span></code></pre></div></p>
+</li>
+<li>
+<p><strong>Inject a bug.</strong> Change the triad loop bound from <code>i &lt; STREAM_ARRAY_SIZE</code> to <code>i &lt;= STREAM_ARRAY_SIZE</code>. Find the out-of-bounds write report and confirm it points at the triad line. Revert.
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Either tool will catch this; ASan is faster:</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>valgrind<span class="w"> </span>./stream_triad<span class="w">           </span><span class="c1"># &quot;Invalid write of size 8&quot;</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>./stream_triad_asan<span class="w">               </span><span class="c1"># &quot;heap-buffer-overflow&quot; or &quot;global-buffer-overflow&quot;</span>
+</span></code></pre></div></p>
+</li>
+<li>
+<p><strong>Uninitialized value.</strong> In a copy of the code, remove the initialization of <code>b[]</code>. Trace the uninitialized-value error back to the missing init loop.
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>valgrind<span class="w"> </span>--track-origins<span class="o">=</span>yes<span class="w"> </span>./stream_triad
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="c1"># Note: ASan does not detect uninitialized reads; use Valgrind or</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="c1"># Clang&#39;s MemorySanitizer (-fsanitize=memory) for this case.</span>
+</span></code></pre></div></p>
+</li>
+<li>
+<p><strong>Hotspot.</strong> Confirm that the triad loop dominates execution time.
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># With Valgrind callgrind:</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>valgrind<span class="w"> </span>--tool<span class="o">=</span>callgrind<span class="w"> </span>--callgrind-out-file<span class="o">=</span>callgrind.out<span class="w"> </span>./stream_triad
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>callgrind_annotate<span class="w"> </span>callgrind.out
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="c1"># With gprof (no Valgrind needed):</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>gcc<span class="w"> </span>-g<span class="w"> </span>-O1<span class="w"> </span>-pg<span class="w"> </span>stream_triad.c<span class="w"> </span>timer.c<span class="w"> </span>-o<span class="w"> </span>stream_triad_pg
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>./stream_triad_pg
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>gprof<span class="w"> </span>stream_triad_pg<span class="w"> </span>gmon.out<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-30
+</span></code></pre></div></p>
+</li>
+<li>
+<p><strong>(Threads)</strong> Build an OpenMP example (<a href="../03-openmp/">Module 3</a>) and check for data races. Identify which reports come from the runtime (noise) versus your code.
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># With Valgrind helgrind:</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>valgrind<span class="w"> </span>--tool<span class="o">=</span>helgrind<span class="w"> </span>./your_omp_program
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># With ThreadSanitizer (much faster, no Valgrind needed):</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>gcc<span class="w"> </span>-g<span class="w"> </span>-O1<span class="w"> </span>-fsanitize<span class="o">=</span>thread<span class="w"> </span>-fopenmp<span class="w"> </span>your_omp_program.c<span class="w"> </span>-o<span class="w"> </span>prog_tsan
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>./prog_tsan
+</span></code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h2 id="discussion-questions">Discussion Questions<a class="headerlink" href="#discussion-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>memcheck reports "still reachable: 19,200,000 bytes" for the Stream Triad but zero "definitely lost." Is this a leak you should fix? Why or why not?</p>
+</li>
+<li>
+<p>Why must you build with <code>-g</code> for useful Valgrind output, and why is <code>-O1</code> usually a better choice than either <code>-O0</code> or <code>-O3</code> while debugging?</p>
+</li>
+<li>
+<p>helgrind flags a "race" inside <code>libgomp</code> that you did not write. How do you decide whether it is a real bug in your use of OpenMP versus benign runtime noise — and what do you do about it either way?</p>
+</li>
+<li>
+<p>You have a wrong-answer bug that only appears with 8 threads, never with 1. Which Valgrind tool do you reach for, and why would memcheck alone not find it?</p>
+</li>
+</ol>
+<details>
+<summary>Show solutions</summary>
+<p><strong>Question 1</strong>: "Still reachable" means the allocations are still pointed to
+by live pointers at program exit — they are not lost, just never explicitly
+freed. The Stream Triad's three arrays (<span class="arithmatex">\(3 \times 80\,\text{M} \times 8\,\text{bytes}
+= 1.92\,\text{GB}\)</span>... actually <span class="arithmatex">\(3 \times 80\,000\,000 \times 8 = 1,920,000,000\)</span>
+bytes, but the question says 19,200,000 which corresponds to smaller example
+arrays) simply fall out of scope at <code>return 0</code>. The OS reclaims all process
+memory on exit regardless. "Still reachable" is not a leak — no data has been
+lost and there is no memory corruption. It is not worth fixing unless the code
+runs as a long-lived server where memory growth would accumulate, or security
+policy requires zeroing sensitive data before deallocation. "Definitely lost"
+(no pointer to the block exists anywhere) is the category that warrants
+immediate attention.</p>
+<p><strong>Question 2</strong>: <code>-g</code> embeds DWARF debugging information — source file names,
+line numbers, function names — that Valgrind uses to produce human-readable
+stack traces. Without it, you get only raw memory addresses. <code>-O0</code> disables
+all optimization, which sometimes hides bugs that only manifest under
+optimization (register allocation, loop transforms, inlining can expose or
+obscure memory errors). <code>-O3</code> enables aggressive inlining and loop transforms
+that can produce confusing stack traces, eliminate source-level variables
+(they become registers), and change memory-access patterns enough to alter
+which errors Valgrind detects. <code>-O1</code> is the pragmatic middle ground: enough
+optimization to reproduce most real-world bugs, while preserving most
+debug structure and keeping stack traces readable.</p>
+<p><strong>Question 3</strong>: First, examine the full stack trace. If the flagged race is
+<em>entirely inside</em> OpenMP runtime code (e.g., inside <code>libgomp.so</code>) with none
+of your code in the trace, it is almost certainly a known benign pattern:
+OpenMP runtimes use lock-free work-stealing or lazy initialization that
+appears as a race to a happens-before detector but is deliberately correct.
+You can confirm by checking helgrind's suppression file for known OpenMP
+suppressions (<code>--gen-suppressions=all</code> generates a suppressions entry you
+can add to <code>~/.valgrind.supp</code>). If <em>your</em> code appears anywhere in the
+trace — even in a function that calls an OpenMP routine — investigate as a
+real bug. Either way, never silently suppress a warning without understanding
+whether your code is in the call path.</p>
+<p><strong>Question 4</strong>: Reach for <strong>helgrind</strong> (or DRD), or for <strong>ThreadSanitizer</strong>
+(<code>-fsanitize=thread</code>) if Valgrind is not available. A wrong-answer bug that
+appears only with multiple threads is almost certainly a <strong>data race</strong>: two
+threads read and write the same memory location without proper synchronization,
+producing a result that depends on scheduling order. memcheck detects memory
+errors — reads from uninitialized memory, out-of-bounds accesses, invalid frees.
+A race that writes the correct type to the correct address is invisible to
+memcheck; the write is well-typed and in-bounds. helgrind and TSan both track
+concurrent accesses and flag when two threads reach the same location without a
+happens-before relationship between them. TSan is typically faster (5–15×
+overhead vs. 50–100× for helgrind) and produces cleaner output for OpenMP code.</p>
+</details>
+<hr />
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<h3 id="reference-materials">Reference materials<a class="headerlink" href="#reference-materials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://valgrind.org/docs/manual/">Valgrind manual</a> — top-level documentation.</li>
+<li><a href="https://kcachegrind.github.io/">KCachegrind</a> — interactive viewer for callgrind output.</li>
+</ul>
+<h3 id="valgrind-tool-manuals">Valgrind tool manuals<a class="headerlink" href="#valgrind-tool-manuals" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://valgrind.org/docs/manual/mc-manual.html">Memcheck</a> — memory errors and leaks.</li>
+<li><a href="https://valgrind.org/docs/manual/hg-manual.html">Helgrind</a> — data races and locking errors.</li>
+<li><a href="https://valgrind.org/docs/manual/drd-manual.html">DRD</a> — alternative data-race detector.</li>
+<li><a href="https://valgrind.org/docs/manual/cg-manual.html">Cachegrind</a> — cache and branch-prediction simulation.</li>
+<li><a href="https://valgrind.org/docs/manual/cl-manual.html">Callgrind</a> — call-graph and instruction profiling.</li>
+<li><a href="https://valgrind.org/docs/manual/ms-manual.html">Massif</a> — heap profiler.</li>
+</ul>
+<h3 id="compiler-sanitizers-alternatives">Compiler sanitizers (alternatives)<a class="headerlink" href="#compiler-sanitizers-alternatives" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://clang.llvm.org/docs/AddressSanitizer.html">AddressSanitizer</a> — Clang/LLVM documentation; same flags work with GCC.</li>
+<li><a href="https://clang.llvm.org/docs/MemorySanitizer.html">MemorySanitizer</a> — uninitialized-read detection (Clang only).</li>
+<li><a href="https://clang.llvm.org/docs/ThreadSanitizer.html">ThreadSanitizer</a> — data-race detection; works with GCC and Clang.</li>
+<li><a href="https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html">UndefinedBehaviorSanitizer</a> — catches integer overflow, null dereference, and other UB.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../09-profiling/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 9: Profiling &amp; Performance Analysis">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                9: Profiling & Performance Analysis
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../11-nsight/" class="md-footer__link md-footer__link--next" aria-label="Next: 11: GPU Profiling with Nsight">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                11: GPU Profiling with Nsight
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Developed at the High Performance Computing Collaboratory (HPC<sup>2</sup>), Mississippi State University — serving the University, State, and Nation through excellence in computational science and engineering.
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "content.code.annotate", "content.tabs.link", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

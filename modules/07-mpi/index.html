@@ -1,0 +1,1826 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A hands-on tutorial covering parallel programming models and best practices for high-performance computing on workstations and SLURM clusters.
+">
+      
+      
+      
+        <link rel="canonical" href="https://CollinsEM.github.io/HPC-Tutorials/modules/07-mpi/">
+      
+      
+        <link rel="prev" href="../06-omp-offload/">
+      
+      
+        <link rel="next" href="../08-kokkos/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/hpc2.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>7: MPI — Distributed Memory - Parallel Programming for HPC — A Practical Guide</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Open Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#module-7-mpi-distributed-memory-parallelism" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-header__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Parallel Programming for HPC — A Practical Guide
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              7: MPI — Distributed Memory
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../00-parallel-theory/" class="md-tabs__link">
+          
+  
+  
+  Modules
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../running/workstation/" class="md-tabs__link">
+          
+  
+  
+  Running Code
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-nav__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    Parallel Programming for HPC — A Practical Guide
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modules
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-parallel-theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0: Parallel Computing Theory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-hardware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1: Hardware & Data Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-autovec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2: Auto-vectorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-openmp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3: OpenMP — CPU Parallelism
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-cuda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4: CUDA — GPU Programming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-stdpar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5: C++17 std::par
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-omp-offload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6: OpenMP Offload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7: MPI — Distributed Memory
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7: MPI — Distributed Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-different-axis-of-parallelism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A Different Axis of Parallelism
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-spmd-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The SPMD Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-1-minimal-mpi-program" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 1 — Minimal MPI Program
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example 1 — Minimal MPI Program">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#building-and-launching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building and launching
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-2-point-to-point-communication-and-deadlock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 2 — Point-to-Point Communication and Deadlock
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example 2 — Point-to-Point Communication and Deadlock">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-starter-code-deadlocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The starter code deadlocks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#four-ways-to-fix-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Four ways to fix it
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-3-distributed-matrix-vector-multiply" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 3 — Distributed Matrix-Vector Multiply
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example 3 — Distributed Matrix-Vector Multiply">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-four-communication-phases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The four communication phases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optimization-collectives-instead-of-hand-rolled-loops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optimization: collectives instead of hand-rolled loops
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-and-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build and run
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#functions-used-in-this-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions used in this module
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-kokkos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8: Kokkos & MATAR — Portability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-profiling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9: Profiling & Performance Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-valgrind/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10: Valgrind — Memory & Threading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-nsight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11: GPU Profiling with Nsight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Code
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Running Code
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/workstation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a Workstation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/slurm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a SLURM Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-different-axis-of-parallelism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A Different Axis of Parallelism
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-spmd-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The SPMD Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-1-minimal-mpi-program" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 1 — Minimal MPI Program
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example 1 — Minimal MPI Program">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#building-and-launching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building and launching
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-2-point-to-point-communication-and-deadlock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 2 — Point-to-Point Communication and Deadlock
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example 2 — Point-to-Point Communication and Deadlock">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-starter-code-deadlocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The starter code deadlocks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#four-ways-to-fix-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Four ways to fix it
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-3-distributed-matrix-vector-multiply" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 3 — Distributed Matrix-Vector Multiply
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example 3 — Distributed Matrix-Vector Multiply">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-four-communication-phases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The four communication phases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optimization-collectives-instead-of-hand-rolled-loops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optimization: collectives instead of hand-rolled loops
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-and-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build and run
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#functions-used-in-this-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions used in this module
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="module-7-mpi-distributed-memory-parallelism">Module 7: MPI — Distributed-Memory Parallelism<a class="headerlink" href="#module-7-mpi-distributed-memory-parallelism" title="Permanent link">&para;</a></h1>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>By the end of this module you will be able to:</p>
+<ul>
+<li>Explain the SPMD execution model and the role of <em>rank</em>, <em>size</em>, and <em>communicator</em></li>
+<li>Write, build, and launch a minimal MPI program with <code>mpiexec</code>/<code>srun</code></li>
+<li>Exchange data with point-to-point <code>MPI_Send</code>/<code>MPI_Recv</code> and explain how ordering causes deadlock</li>
+<li>Avoid deadlock using ordered sends, <code>MPI_Sendrecv</code>, or non-blocking <code>MPI_Isend</code>/<code>MPI_Irecv</code></li>
+<li>Distribute and collect data with collective operations (<code>MPI_Bcast</code>, <code>MPI_Scatter</code>, <code>MPI_Gather</code>)</li>
+<li>Reason about when communication cost outweighs the benefit of more processes</li>
+</ul>
+<hr />
+<h2 id="a-different-axis-of-parallelism">A Different Axis of Parallelism<a class="headerlink" href="#a-different-axis-of-parallelism" title="Permanent link">&para;</a></h2>
+<p>Every module so far has used <strong>shared memory</strong>: threads (OpenMP), vector lanes (SIMD), or GPU threads all read and write the <em>same</em> address space. <a href="https://www.mpi-forum.org/docs/">MPI</a> is different. It is the tool for <strong>distributed memory</strong> — many separate processes, each with its own private memory, possibly on different physical nodes of a cluster, cooperating by <em>passing messages</em>.</p>
+<p>This maps to the <strong>MIMD</strong> category of <a href="../00-parallel-theory/">Flynn's taxonomy</a>: Multiple Instruction, Multiple Data. It is how computation scales <em>beyond a single node</em> — past the point where shared-memory threading runs out of cores or memory.</p>
+<div class="admonition note">
+<p class="admonition-title">MPI and OpenMP are complementary, not competing</p>
+<p>Large HPC codes are commonly <em>hybrid</em>: MPI between nodes, OpenMP (or CUDA) within each node. MPI handles the inter-node communication that shared-memory models cannot; threading exploits the cores inside each node. The two compose cleanly.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">This module does not use the Stream Triad</p>
+<p>The triad is a single-loop, memory-bandwidth benchmark — there is nothing to communicate, so it is a poor vehicle for MPI. Instead, Example 3 uses a <strong>distributed matrix-vector multiply</strong>, where the matrix is split across processes and partial results are gathered. This exposes the real subject of MPI: data distribution and communication.</p>
+</div>
+<hr />
+<h2 id="the-spmd-model">The SPMD Model<a class="headerlink" href="#the-spmd-model" title="Permanent link">&para;</a></h2>
+<p>MPI programs follow the <strong>Single Program, Multiple Data</strong> (SPMD) pattern: you launch <em>N</em> copies of the <em>same</em> executable, and each copy discovers its identity at runtime and acts accordingly.</p>
+<p>Four calls form the skeleton of every MPI program:</p>
+<table>
+<thead>
+<tr>
+<th>Call</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MPI_Init(&amp;argc, &amp;argv)</code></td>
+<td>Start the MPI runtime; create the default communicator</td>
+</tr>
+<tr>
+<td><code>MPI_Comm_rank(comm, &amp;rank)</code></td>
+<td>Get <em>this</em> process's ID (0 to size-1)</td>
+</tr>
+<tr>
+<td><code>MPI_Comm_size(comm, &amp;size)</code></td>
+<td>Get the total number of processes</td>
+</tr>
+<tr>
+<td><code>MPI_Finalize()</code></td>
+<td>Tear down the runtime (required — skipping it leaks resources or segfaults)</td>
+</tr>
+</tbody>
+</table>
+<p>A <strong>communicator</strong> is a named group of processes that can talk to each other. <code>MPI_COMM_WORLD</code> is the default, created by <code>MPI_Init</code>, containing every process in the job. A <strong>rank</strong> is a process's zero-based index within a communicator — the distributed-memory analogue of <code>omp_get_thread_num()</code>.</p>
+<hr />
+<h2 id="example-1-minimal-mpi-program">Example 1 — Minimal MPI Program<a class="headerlink" href="#example-1-minimal-mpi-program" title="Permanent link">&para;</a></h2>
+<p><code>examples/MPI/Example1/MinWorkExampleMPI.c</code>:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;mpi.h&gt;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="n">MPI_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">argv</span><span class="p">);</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">rank</span><span class="p">,</span><span class="w"> </span><span class="n">nprocs</span><span class="p">;</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="n">MPI_Comm_rank</span><span class="p">(</span><span class="n">MPI_COMM_WORLD</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rank</span><span class="p">);</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="n">MPI_Comm_size</span><span class="p">(</span><span class="n">MPI_COMM_WORLD</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">nprocs</span><span class="p">);</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Rank %d of %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rank</span><span class="p">,</span><span class="w"> </span><span class="n">nprocs</span><span class="p">);</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span><span class="n">MPI_Finalize</span><span class="p">();</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="building-and-launching">Building and launching<a class="headerlink" href="#building-and-launching" title="Permanent link">&para;</a></h3>
+<p>MPI programs are compiled with a <em>compiler wrapper</em> (<code>mpicc</code> for C, <code>mpicxx</code> for C++) that adds the MPI headers and libraries, then launched with <code>mpiexec</code>/<code>mpirun</code> (or <code>srun</code> under SLURM):</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Workstation</label><label for="__tabbed_1_2">SLURM cluster</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">cd</span><span class="w"> </span>examples/MPI/Example1
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>mpicc<span class="w"> </span>MinWorkExampleMPI.c<span class="w"> </span>-o<span class="w"> </span>min_mpi
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>mpiexec<span class="w"> </span>-n<span class="w"> </span><span class="m">4</span><span class="w"> </span>./min_mpi
+</span></code></pre></div>
+Or with the provided CMake build:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>cmake<span class="w"> </span>.<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>make
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>mpiexec<span class="w"> </span>-n<span class="w"> </span><span class="m">4</span><span class="w"> </span>./MinWorkExampleMPI
+</span></code></pre></div></p>
+</div>
+<div class="tabbed-block">
+<p>See <code>examples/MPI/run.slurm</code>. The number of ranks comes from <code>--ntasks</code>; launch with <code>srun ./min_mpi</code> so SLURM places one rank per task.</p>
+</div>
+</div>
+</div>
+<p><strong>Expected output</strong> (order is non-deterministic — ranks run concurrently):</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Rank 2 of 4
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>Rank 0 of 4
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>Rank 3 of 4
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>Rank 1 of 4
+</span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title"><code>-n</code> sets the number of ranks</p>
+<p><code>mpiexec -n 4</code> launches 4 processes. On a workstation these oversubscribe the available cores if you ask for more ranks than cores; on a cluster, the count must fit the resources SLURM granted (<code>--ntasks</code>).</p>
+</div>
+<hr />
+<h2 id="example-2-point-to-point-communication-and-deadlock">Example 2 — Point-to-Point Communication and Deadlock<a class="headerlink" href="#example-2-point-to-point-communication-and-deadlock" title="Permanent link">&para;</a></h2>
+<p>The most fundamental MPI operation is sending a message from one rank to another. The blocking calls are:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">MPI_Send</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">dest</span><span class="p">,</span><span class="w">   </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">);</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">MPI_Recv</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">source</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_STATUS_IGNORE</span><span class="p">);</span>
+</span></code></pre></div>
+<p>The <code>tag</code> is a user-chosen integer that lets a receiver match a specific message; <code>dest</code>/<code>source</code> name the partner rank. Example 2 pairs up processes (0↔1, 2↔3, …) and has each pair exchange an array.</p>
+<h3 id="the-starter-code-deadlocks">The starter code deadlocks<a class="headerlink" href="#the-starter-code-deadlocks" title="Permanent link">&para;</a></h3>
+<p><code>examples/MPI/Example2/SendRecv1.cpp</code> has <strong>every</strong> rank call <code>MPI_Recv</code> <em>before</em> <code>MPI_Send</code>:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">MPI_Recv</span><span class="p">(</span><span class="n">xrecv</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">partner_rank</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_STATUS_IGNORE</span><span class="p">);</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">MPI_Send</span><span class="p">(</span><span class="n">xsend</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">partner_rank</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">);</span>
+</span></code></pre></div>
+<p><code>MPI_Recv</code> is <strong>blocking</strong>: it does not return until a matching message arrives. Every rank is now stuck waiting to receive, and <em>no rank ever reaches its <code>MPI_Send</code></em>. The program hangs forever — a classic <strong>deadlock</strong>.</p>
+<div class="admonition warning">
+<p class="admonition-title">A hung MPI job is usually a deadlock</p>
+<p>If <code>mpiexec</code> never returns and the CPUs sit at 100%, suspect a Send/Recv ordering deadlock. Kill it with <code>Ctrl+C</code> and inspect the order of your blocking calls.</p>
+</div>
+<h3 id="four-ways-to-fix-it">Four ways to fix it<a class="headerlink" href="#four-ways-to-fix-it" title="Permanent link">&para;</a></h3>
+<p>The <code>solutions/</code> directory walks through progressively better fixes. Each is worth understanding because they trade off safety, clarity, and performance.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:4"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><input id="__tabbed_2_4" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">1. Send-then-Recv (unsafe)</label><label for="__tabbed_2_2">2. Ordered by parity (correct)</label><label for="__tabbed_2_3">3. MPI_Sendrecv (clean)</label><label for="__tabbed_2_4">4. Non-blocking (most flexible)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><code>SendRecv2.cpp</code> simply swaps the order — <code>MPI_Send</code> first:
+<div class="language-c highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">MPI_Send</span><span class="p">(</span><span class="n">xsend</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">partner_rank</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">);</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">MPI_Recv</span><span class="p">(</span><span class="n">xrecv</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">partner_rank</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_STATUS_IGNORE</span><span class="p">);</span>
+</span></code></pre></div>
+This <em>appears</em> to work for small messages but is <strong>not correct</strong>. It relies on the MPI library buffering the outgoing message (the "eager" protocol). For messages larger than the eager threshold, <code>MPI_Send</code> blocks until the matching receive is posted — and you deadlock again. Never rely on this.</p>
+</div>
+<div class="tabbed-block">
+<p><code>SendRecv3.cpp</code> breaks the symmetry: even ranks send first, odd ranks receive first.
+<div class="language-c highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rank</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="n">MPI_Send</span><span class="p">(</span><span class="n">xsend</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">partner_rank</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">);</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="n">MPI_Recv</span><span class="p">(</span><span class="n">xrecv</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">partner_rank</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_STATUS_IGNORE</span><span class="p">);</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="n">MPI_Recv</span><span class="p">(</span><span class="n">xrecv</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">partner_rank</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_STATUS_IGNORE</span><span class="p">);</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span><span class="n">MPI_Send</span><span class="p">(</span><span class="n">xsend</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">partner_rank</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">);</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="p">}</span>
+</span></code></pre></div>
+Now every send has a receiver ready. Correct, but verbose and easy to get wrong as patterns grow.</p>
+</div>
+<div class="tabbed-block">
+<p><code>SendRecv4.cpp</code> uses the combined call, which the library schedules safely:
+<div class="language-c highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">MPI_Sendrecv</span><span class="p">(</span><span class="n">xsend</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">partner_rank</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">             </span><span class="n">xrecv</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">partner_rank</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">             </span><span class="n">comm</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_STATUS_IGNORE</span><span class="p">);</span>
+</span></code></pre></div>
+One call, no ordering to get wrong. Ideal for the common "swap with a neighbor" pattern (e.g., halo exchange).</p>
+</div>
+<div class="tabbed-block">
+<p><code>SendRecv5.cpp</code> posts both operations without blocking, then waits:
+<div class="language-c highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">MPI_Request</span><span class="w"> </span><span class="n">requests</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">MPI_REQUEST_NULL</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_REQUEST_NULL</span><span class="p">};</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">MPI_Irecv</span><span class="p">(</span><span class="n">xrecv</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">partner_rank</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">requests</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">MPI_Isend</span><span class="p">(</span><span class="n">xsend</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">partner_rank</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">requests</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">MPI_Waitall</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">requests</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_STATUSES_IGNORE</span><span class="p">);</span>
+</span></code></pre></div>
+<code>MPI_Isend</code>/<code>MPI_Irecv</code> return immediately, handing back a <code>MPI_Request</code> handle. <code>MPI_Waitall</code> blocks until both complete. This cannot deadlock, and — crucially — it lets you <strong>overlap computation with communication</strong>: do useful work between posting the requests and waiting on them.</p>
+</div>
+</div>
+</div>
+<h3 id="assignment">Assignment<a class="headerlink" href="#assignment" title="Permanent link">&para;</a></h3>
+<p>Build and run each version with an even number of ranks. Confirm <code>SendRecv1</code> hangs (kill it after a few seconds), then verify each fix completes.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">cd</span><span class="w"> </span>examples/MPI/Example2
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>mpicxx<span class="w"> </span>SendRecv1.cpp<span class="w"> </span>-o<span class="w"> </span>sr1<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>mpiexec<span class="w"> </span>-n<span class="w"> </span><span class="m">4</span><span class="w"> </span>./sr1<span class="w">   </span><span class="c1"># hangs — Ctrl+C</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>mpicxx<span class="w"> </span>solutions/SendRecv5.cpp<span class="w"> </span>-o<span class="w"> </span>sr5<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>mpiexec<span class="w"> </span>-n<span class="w"> </span><span class="m">4</span><span class="w"> </span>./sr5
+</span></code></pre></div>
+<p>Then <strong>stress-test version 1 of the fix</strong> (<code>SendRecv2</code>, send-then-recv): increase <code>count</code> from 10 to 100000 and rerun. Observe that it now deadlocks too, proving the eager-buffer dependency. (Keep the count in this range — the arrays are stack-allocated, so a multi-million-element count would overflow the stack and crash before the MPI calls run.)</p>
+<hr />
+<h2 id="example-3-distributed-matrix-vector-multiply">Example 3 — Distributed Matrix-Vector Multiply<a class="headerlink" href="#example-3-distributed-matrix-vector-multiply" title="Permanent link">&para;</a></h2>
+<p>This capstone combines everything: a collective broadcast, point-to-point distribution, local computation, and a gather. The problem is <span class="arithmatex">\(y = Mx\)</span> for an <span class="arithmatex">\(N \times N\)</span> matrix <span class="arithmatex">\(M\)</span> and vector <span class="arithmatex">\(x\)</span>, with <span class="arithmatex">\(N = 10000\)</span>.</p>
+<p>The strategy — <strong>domain decomposition</strong> — splits the matrix by rows. Each process owns a contiguous block of rows and computes the corresponding block of the result.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>            Matrix M (N rows)              Vector x      Result y
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>          +------------------+                +--+         +--+
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a> rank 0   |   rows 0..k-1    | x  ............ |  |  ----&gt;  |  | rows 0..k-1
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>          +------------------+                |  |         +--+
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a> rank 1   |   rows k..2k-1   | x  ............ |  |  ----&gt;  |  | rows k..2k-1
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>          +------------------+                |  |         +--+
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a> rank 2   |  rows 2k..3k-1   | x  ............ |  |  ----&gt;  |  | rows 2k..3k-1
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>          +------------------+                +--+         +--+
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>        (distributed by rows)            (broadcast to all)  (gathered to rank 0)
+</span></code></pre></div>
+<h3 id="the-four-communication-phases">The four communication phases<a class="headerlink" href="#the-four-communication-phases" title="Permanent link">&para;</a></h3>
+<p>The code is instrumented with <code>MPI_Wtime()</code> around each phase so you can see where time goes:</p>
+<ol>
+<li>
+<p><strong>Broadcast the vector</strong> — every process needs the <em>whole</em> vector <span class="arithmatex">\(x\)</span>:
+   <div class="language-c highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">MPI_Bcast</span><span class="p">(</span><span class="n">vector</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_COMM_WORLD</span><span class="p">);</span>
+</span></code></pre></div>
+   <code>MPI_Bcast</code> is a <strong>collective</strong>: one-to-all. Rank 0 (the <code>root</code>) sends; all ranks receive. Every process must call it.</p>
+</li>
+<li>
+<p><strong>Distribute matrix rows</strong> — rank 0 sends each process its block of rows with point-to-point <code>MPI_Send</code>, keeping its own block:
+   <div class="language-c highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">dest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">dest</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">size</span><span class="p">;</span><span class="w"> </span><span class="n">dest</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="n">MPI_Send</span><span class="p">(</span><span class="o">&amp;</span><span class="n">matrix</span><span class="p">[</span><span class="n">dest_start_row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">N</span><span class="p">],</span><span class="w"> </span><span class="n">dest_rows</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="n">dest</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">);</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="p">}</span>
+</span></code></pre></div></p>
+</li>
+<li>
+<p><strong>Local computation</strong> — each process multiplies its rows by the vector, entirely in its own memory (no communication):
+   <div class="language-c highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">local_rows</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">N</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="o">++</span><span class="p">)</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="n">local_result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">local_matrix</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">N</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">vector</span><span class="p">[</span><span class="n">j</span><span class="p">];</span>
+</span></code></pre></div></p>
+</li>
+<li>
+<p><strong>Gather results</strong> — each non-root process sends its partial result back to rank 0:
+   <div class="language-c highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">MPI_Send</span><span class="p">(</span><span class="n">local_result</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span><span class="w"> </span><span class="n">local_rows</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">);</span>
+</span></code></pre></div></p>
+</li>
+</ol>
+<h3 id="optimization-collectives-instead-of-hand-rolled-loops">Optimization: collectives instead of hand-rolled loops<a class="headerlink" href="#optimization-collectives-instead-of-hand-rolled-loops" title="Permanent link">&para;</a></h3>
+<p>The manual <code>MPI_Send</code> loop in phase 2 is exactly what the collective <code>MPI_Scatter</code> does — and the library implementation is typically faster (it can use a tree algorithm instead of a serial loop from the root). <code>examples/MPI/Example3/vector_matrix_mpi_opt.cpp</code> replaces the distribution loop with:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">MPI_Scatter</span><span class="p">(</span><span class="n">matrix</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span><span class="w"> </span><span class="n">rows_per_proc</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">            </span><span class="n">local_matrix</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span><span class="w"> </span><span class="n">rows_per_proc</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_DOUBLE</span><span class="p">,</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">            </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_COMM_WORLD</span><span class="p">);</span>
+</span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Prefer collectives over point-to-point loops</p>
+<p>Whenever you find yourself writing <code>for (dest = 1; dest &lt; size; dest++) MPI_Send(...)</code> from the root, there is almost certainly a collective (<code>MPI_Scatter</code>, <code>MPI_Gather</code>, <code>MPI_Bcast</code>, <code>MPI_Allgather</code>) that expresses it more clearly <em>and</em> runs faster. Collectives also give the MPI runtime freedom to optimize for the network topology.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">MPI_Scatter requires even division</p>
+<p><code>MPI_Scatter</code> sends the <em>same</em> count to every rank. When <code>N</code> is not divisible by <code>size</code>, the last process's extra rows (handled by the <code>(rank == size-1)</code> logic in the manual version) need <code>MPI_Scatterv</code>, the variable-count variant. This is the subject of a discussion question below.</p>
+</div>
+<h3 id="build-and-run">Build and run<a class="headerlink" href="#build-and-run" title="Permanent link">&para;</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Workstation</label><label for="__tabbed_3_2">SLURM cluster</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nb">cd</span><span class="w"> </span>examples/MPI/Example3
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>mpicxx<span class="w"> </span>vector_matrix_mpi.cpp<span class="w"> </span>-o<span class="w"> </span>vmm
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>mpiexec<span class="w"> </span>-n<span class="w"> </span><span class="m">4</span><span class="w"> </span>./vmm
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>See <code>examples/MPI/run.slurm</code>. Set <code>--ntasks</code> to the number of ranks; with <span class="arithmatex">\(N = 10000\)</span>, 4–16 ranks is reasonable. Launch the binary with <code>srun</code>.</p>
+</div>
+</div>
+</div>
+<p><strong>Expected output:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>Matrix and vector initialized.
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>Initialization time: 0.42 seconds
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>Distribution time: 0.31 seconds
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>Computation time: 0.18 seconds
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>Gather time: 0.001 seconds
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>Result vector computed successfully.
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>First 5 elements of result: ...
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>Timing Summary:
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>...
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>Total time: 0.91 seconds
+</span></code></pre></div>
+<p>Look at the <strong>distribution time versus computation time</strong>. For this problem the matrix is large (<span class="arithmatex">\(10000^2 \times 8\)</span> bytes = 800 MB) and the per-row work is small, so moving the data can cost as much as the math — the distributed-memory echo of the "data transfer dominates" lesson from the <a href="../04-cuda/">CUDA module</a>.</p>
+<hr />
+<h2 id="discussion-questions">Discussion Questions<a class="headerlink" href="#discussion-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>In Example 2, <code>SendRecv2</code> (send-then-receive) passes with <code>count = 10</code> but deadlocks with <code>count = 100000</code>. Explain the role of the MPI eager/rendezvous protocol threshold. Why is depending on it a latent bug rather than a working optimization?</p>
+</li>
+<li>
+<p>Example 3 distributes the matrix by <em>rows</em>. If instead you distributed by <em>columns</em>, what would change about the communication pattern and the final reduction? Which decomposition is better for matrix-vector multiply, and why?</p>
+</li>
+<li>
+<p>The manual distribution loop was replaced by <code>MPI_Scatter</code>, but <code>MPI_Scatter</code> requires every rank to receive the same number of rows. Sketch how <code>MPI_Scatterv</code> handles the case where <code>N</code> is not divisible by the number of ranks. What extra arrays does it require?</p>
+</li>
+<li>
+<p>Using the timing breakdown, suppose you double the number of ranks. Amdahl's Law aside, what happens to <em>distribution</em> time and <em>computation</em> time individually? At what point does adding ranks stop helping?</p>
+</li>
+<li>
+<p>A production code would overlap communication and computation using the non-blocking pattern from Example 2. In the matrix-vector multiply, what work could a process do <em>while</em> its matrix rows are still arriving?</p>
+</li>
+</ol>
+<details>
+<summary>Show solutions</summary>
+<p><strong>Question 1</strong>: MPI implementations use an <em>eager</em> protocol for small messages
+(typically up to 8–64 KB, configurable): the sender copies the payload into
+an MPI-managed buffer and returns immediately, without waiting for the receiver
+to post its <code>MPI_Recv</code>. With <code>count = 10</code> (80 bytes), both processes queue their
+messages in eager buffers and then post their receives — no deadlock. With
+<code>count = 100,000</code> (800 KB), the message exceeds the eager limit and MPI switches
+to the <em>rendezvous</em> protocol: the sender blocks until the receiver signals it is
+ready, then they coordinate the transfer. If both ranks call <code>MPI_Send</code> before
+either calls <code>MPI_Recv</code>, each is waiting for the other to receive — deadlock.
+This is a latent bug because the eager threshold is an implementation detail
+that varies across Open MPI versions, MPICH configurations, and network
+fabrics. Code that "works" today with one MPI installation may deadlock after
+a version upgrade or when run on a different cluster.</p>
+<p><strong>Question 2</strong>: Row distribution: each rank holds <span class="arithmatex">\(\lfloor N/P \rfloor\)</span> rows of
+<span class="arithmatex">\(A\)</span> and computes the corresponding elements of <span class="arithmatex">\(y = Ax\)</span>. The vector <span class="arithmatex">\(x\)</span> must be
+broadcast to all ranks (one <code>MPI_Bcast</code>), and the partial <span class="arithmatex">\(y\)</span> segments are
+collected with <code>MPI_Gather</code>. Column distribution: each rank holds <span class="arithmatex">\(\lfloor N/P
+\rfloor\)</span> columns of <span class="arithmatex">\(A\)</span> and the matching segment of <span class="arithmatex">\(x\)</span>. Each rank produces a
+full-length partial sum (its columns' contribution to every <span class="arithmatex">\(y_i\)</span>), and these
+must be summed across all ranks with <code>MPI_Allreduce</code>. Row distribution is
+generally preferred: <code>MPI_Bcast</code> is cheaper than <code>MPI_Allreduce</code> (one root
+broadcasts vs. all-to-all reduction), and the local computation is embarrassingly
+independent — no cross-rank dependencies until the gather.</p>
+<p><strong>Question 3</strong>: <code>MPI_Scatterv</code> takes two extra arrays compared to <code>MPI_Scatter</code>:
+<code>sendcounts[P]</code> (the number of elements sent to each rank) and <code>displs[P]</code> (the
+offset into the send buffer where each rank's data starts). For <span class="arithmatex">\(N\)</span> rows and <span class="arithmatex">\(P\)</span>
+ranks with <span class="arithmatex">\(r = N \bmod P\)</span>: ranks <span class="arithmatex">\(0, \ldots, r-1\)</span> receive <span class="arithmatex">\(\lceil N/P \rceil\)</span>
+rows; ranks <span class="arithmatex">\(r, \ldots, P-1\)</span> receive <span class="arithmatex">\(\lfloor N/P \rfloor\)</span> rows.
+The displacement array is the prefix sum of <code>sendcounts</code>:
+<code>displs[0] = 0</code>, <code>displs[k] = displs[k-1] + sendcounts[k-1]</code>.</p>
+<p><strong>Question 4</strong>: When the rank count doubles from <span class="arithmatex">\(P\)</span> to <span class="arithmatex">\(2P\)</span>, each rank's
+computation halves (from <span class="arithmatex">\(N/P\)</span> to <span class="arithmatex">\(N/2P\)</span> rows), so <em>computation time</em> scales as
+<span class="arithmatex">\(1/P\)</span> — ideal strong scaling. <em>Distribution time</em> is dominated by the root
+sending <span class="arithmatex">\(N\)</span> rows total to <span class="arithmatex">\(2P\)</span> destinations; with a tree-based broadcast the
+latency grows as <span class="arithmatex">\(O(\log P)\)</span>, so it increases slightly. Adding ranks stops
+helping when distribution and communication time (which grow or hold steady)
+match computation time (which shrinks). Beyond that crossover point,
+half the wall time is spent communicating and the parallel efficiency drops
+below 50%.</p>
+<p><strong>Question 5</strong>: In a row-distributed matrix-vector multiply, once rank <span class="arithmatex">\(k\)</span> has
+received its rows it can immediately begin computing the dot products <span class="arithmatex">\(y_k =
+A_k \cdot x\)</span> — this work is entirely independent of what other ranks are doing.
+With non-blocking collectives (<code>MPI_Ibcast</code> for the vector, <code>MPI_Iscatter</code> for
+the rows), the rank can post the receives, then compute on any rows or vector
+elements it already holds in its local buffer, then call <code>MPI_Waitall</code> only
+when it actually needs the data that is still in flight. In practice, a
+double-buffered scheme splits the matrix into two tiles: while the GPU (or CPU)
+computes the first tile, the second tile's data arrives via DMA, hiding
+communication latency behind useful work.</p>
+</details>
+<hr />
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<h3 id="reference-materials">Reference materials<a class="headerlink" href="#reference-materials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://www.mpi-forum.org/docs/">MPI Forum standard</a> — the normative specification; authoritative but dense.</li>
+<li><a href="https://www.open-mpi.org/doc/">Open MPI documentation</a> — implementation docs and the per-function man pages linked below.</li>
+<li><a href="https://www.mpich.org/static/docs/latest/">MPICH documentation</a> — man pages for the other major implementation; semantics match the standard.</li>
+<li><a href="https://rookiehpc.org/mpi/">rookieHPC MPI guide</a> — community-maintained pages with plain-language explanations and runnable examples.</li>
+</ul>
+<h3 id="functions-used-in-this-module">Functions used in this module<a class="headerlink" href="#functions-used-in-this-module" title="Permanent link">&para;</a></h3>
+<p>Links point to the Open MPI man pages.</p>
+<p><strong>Environment and timing:</strong>
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Init.3.php">MPI_Init</a>,
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Finalize.3.php">MPI_Finalize</a>,
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Comm_rank.3.php">MPI_Comm_rank</a>,
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Comm_size.3.php">MPI_Comm_size</a>,
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Wtime.3.php">MPI_Wtime</a></p>
+<p><strong>Point-to-point communication:</strong>
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Send.3.php">MPI_Send</a>,
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Recv.3.php">MPI_Recv</a>,
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Sendrecv.3.php">MPI_Sendrecv</a>,
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Isend.3.php">MPI_Isend</a>,
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Irecv.3.php">MPI_Irecv</a>,
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Waitall.3.php">MPI_Waitall</a></p>
+<p><strong>Collective communication:</strong>
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Bcast.3.php">MPI_Bcast</a>,
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Scatter.3.php">MPI_Scatter</a>,
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Scatterv.3.php">MPI_Scatterv</a>,
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Gather.3.php">MPI_Gather</a>,
+<a href="https://www.open-mpi.org/doc/current/man3/MPI_Allgather.3.php">MPI_Allgather</a></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../06-omp-offload/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 6: OpenMP Offload">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                6: OpenMP Offload
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../08-kokkos/" class="md-footer__link md-footer__link--next" aria-label="Next: 8: Kokkos &amp; MATAR — Portability">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                8: Kokkos & MATAR — Portability
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Developed at the High Performance Computing Collaboratory (HPC<sup>2</sup>), Mississippi State University — serving the University, State, and Nation through excellence in computational science and engineering.
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "content.code.annotate", "content.tabs.link", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

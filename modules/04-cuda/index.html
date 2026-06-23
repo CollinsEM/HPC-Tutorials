@@ -1,0 +1,2087 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A hands-on tutorial covering parallel programming models and best practices for high-performance computing on workstations and SLURM clusters.
+">
+      
+      
+      
+        <link rel="canonical" href="https://CollinsEM.github.io/HPC-Tutorials/modules/04-cuda/">
+      
+      
+        <link rel="prev" href="../03-openmp/">
+      
+      
+        <link rel="next" href="../05-stdpar/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/hpc2.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>4: CUDA — GPU Programming - Parallel Programming for HPC — A Practical Guide</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Open Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#module-4-cuda-gpu-programming" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-header__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Parallel Programming for HPC — A Practical Guide
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              4: CUDA — GPU Programming
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../00-parallel-theory/" class="md-tabs__link">
+          
+  
+  
+  Modules
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../running/workstation/" class="md-tabs__link">
+          
+  
+  
+  Running Code
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Parallel Programming for HPC — A Practical Guide" class="md-nav__button md-logo" aria-label="Parallel Programming for HPC — A Practical Guide" data-md-component="logo">
+      
+  <img src="../../assets/MSU_M_white.svg" alt="logo">
+
+    </a>
+    Parallel Programming for HPC — A Practical Guide
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modules
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-parallel-theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0: Parallel Computing Theory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-hardware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1: Hardware & Data Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-autovec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2: Auto-vectorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-openmp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3: OpenMP — CPU Parallelism
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4: CUDA — GPU Programming
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4: CUDA — GPU Programming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-gpu-execution-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. GPU Execution Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. GPU Execution Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#thread-indexing-1d-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thread Indexing (1D case)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-host-and-device-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Host and Device Memory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-the-cuda-stream-triad-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. The CUDA Stream Triad Kernel
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Assignment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Assignment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-complete-the-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — Complete the kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-allocate-device-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Allocate device memory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-copy-host-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3 — Copy host → device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-launch-the-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4 — Launch the kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-copy-device-host" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5 — Copy device → host
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-build-and-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Build and Run
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-expected-output-and-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Expected Output and Analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Expected Output and Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#memory-bandwidth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory Bandwidth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-a-compute-bound-kernel-matrix-multiplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. A Compute-Bound Kernel: Matrix Multiplication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. A Compute-Bound Kernel: Matrix Multiplication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mapping-threads-to-a-2d-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mapping threads to a 2D problem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-and-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build and run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#discussion-questions_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-api-calls-used-in-this-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime API calls used in this module
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-stdpar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5: C++17 std::par
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-omp-offload/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6: OpenMP Offload
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-mpi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7: MPI — Distributed Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-kokkos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8: Kokkos & MATAR — Portability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-profiling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9: Profiling & Performance Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-valgrind/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10: Valgrind — Memory & Threading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-nsight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11: GPU Profiling with Nsight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Code
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Running Code
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/workstation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a Workstation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/slurm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    On a SLURM Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Objectives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-gpu-execution-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. GPU Execution Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. GPU Execution Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#thread-indexing-1d-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thread Indexing (1D case)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-host-and-device-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Host and Device Memory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-the-cuda-stream-triad-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. The CUDA Stream Triad Kernel
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Assignment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Assignment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-complete-the-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — Complete the kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-allocate-device-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Allocate device memory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-copy-host-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3 — Copy host → device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-launch-the-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4 — Launch the kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-copy-device-host" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5 — Copy device → host
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-build-and-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Build and Run
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-expected-output-and-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Expected Output and Analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Expected Output and Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#memory-bandwidth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory Bandwidth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#discussion-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-a-compute-bound-kernel-matrix-multiplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. A Compute-Bound Kernel: Matrix Multiplication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. A Compute-Bound Kernel: Matrix Multiplication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mapping-threads-to-a-2d-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mapping threads to a 2D problem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-and-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build and run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#discussion-questions_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion Questions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-api-calls-used-in-this-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime API calls used in this module
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="module-4-cuda-gpu-programming">Module 4: CUDA GPU Programming<a class="headerlink" href="#module-4-cuda-gpu-programming" title="Permanent link">&para;</a></h1>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>By the end of this module you will be able to:</p>
+<ul>
+<li>Explain the host/device memory model and why explicit data transfers exist</li>
+<li>Write a CUDA kernel and configure its grid and block dimensions</li>
+<li>Allocate GPU memory with <code>cudaMalloc</code> and transfer data with <code>cudaMemcpy</code></li>
+<li>Check CUDA API error codes and kernel launch errors</li>
+<li>Measure kernel execution time separately from data transfer time</li>
+<li>Compute effective memory bandwidth and compare to GPU specs</li>
+<li>Map threads to a 2D problem with 2D grids and blocks</li>
+<li>Contrast a compute-bound kernel (matrix multiply) with a bandwidth-bound one (Stream Triad) on the roofline</li>
+</ul>
+<hr />
+<h2 id="1-gpu-execution-model">1. GPU Execution Model<a class="headerlink" href="#1-gpu-execution-model" title="Permanent link">&para;</a></h2>
+<p>A GPU consists of thousands of simple cores organized into <em>Streaming Multiprocessors</em>
+(SMs). Unlike a CPU, which has a small number of powerful, latency-optimized cores,
+a GPU is designed to hide memory latency by switching between thousands of in-flight
+threads. The hardware scheduler swaps a thread group out while it waits for memory
+and immediately runs another.</p>
+<p>When you launch a <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/">CUDA</a> <em>kernel</em>, you specify two dimensions:</p>
+<ul>
+<li>A <strong>grid</strong> — the number of thread blocks to launch</li>
+<li>A <strong>thread block</strong> — the number of threads within each block</li>
+</ul>
+<p>Every thread executes the same kernel function but with a unique index, making
+CUDA a SIMT (Single Instruction, Multiple Thread) model — the GPU analogue of SIMD.</p>
+<h3 id="thread-indexing-1d-case">Thread Indexing (1D case)<a class="headerlink" href="#thread-indexing-1d-case" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>global_thread_index = blockIdx.x * blockDim.x + threadIdx.x
+</span></code></pre></div>
+<p>CUDA provides built-in variables for each thread:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>threadIdx.x</code></td>
+<td>Thread index within its block (0 to <code>blockDim.x - 1</code>)</td>
+</tr>
+<tr>
+<td><code>blockIdx.x</code></td>
+<td>Block index within the grid</td>
+</tr>
+<tr>
+<td><code>blockDim.x</code></td>
+<td>Number of threads per block</td>
+</tr>
+<tr>
+<td><code>gridDim.x</code></td>
+<td>Number of blocks in the grid</td>
+</tr>
+</tbody>
+</table>
+<p>Block size must be a multiple of 32 (the <em>warp</em> size — the hardware execution unit
+that schedules 32 threads together). A common choice is 256 or 512 threads per block.
+Grid size is computed to cover the array:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">blocksize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">512</span><span class="p">;</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kt">int</span><span class="w"> </span><span class="n">gridsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">blocksize</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">blocksize</span><span class="p">;</span><span class="w">  </span><span class="c1">// round up</span>
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Bounds check is mandatory</p>
+<p>When <code>n</code> is not evenly divisible by <code>blocksize</code>, the last block contains threads
+whose computed index exceeds the array bounds. Always guard with <code>if (i &gt;= n) return;</code>
+at the start of the kernel before any array access.</p>
+</div>
+<hr />
+<h2 id="2-host-and-device-memory">2. Host and Device Memory<a class="headerlink" href="#2-host-and-device-memory" title="Permanent link">&para;</a></h2>
+<p>CPUs and GPUs have <strong>separate memory spaces</strong>. The GPU has its own DRAM (device
+memory) connected via a high-bandwidth bus (hundreds of GB/s for HBM, 500–1000 GB/s
+on modern data-center GPUs). CPU-to-GPU transfers go over PCIe (~16 GB/s) — a
+significant bottleneck for small or frequently-transferred arrays.</p>
+<p>The standard workflow for every GPU computation:</p>
+<ol>
+<li>Allocate host (CPU) arrays with <code>malloc</code></li>
+<li>Allocate device (GPU) arrays with <code>cudaMalloc</code></li>
+<li>Copy input data host → device with <code>cudaMemcpy(..., cudaMemcpyHostToDevice)</code></li>
+<li>Launch kernel(s)</li>
+<li><code>cudaDeviceSynchronize()</code> — wait for the GPU to finish</li>
+<li>Copy results device → host with <code>cudaMemcpy(..., cudaMemcpyDeviceToHost)</code></li>
+<li><code>cudaFree</code> device arrays; <code>free</code> host arrays</li>
+</ol>
+<p>Data transfer is often the dominant cost for memory-bound kernels. The Stream Triad
+benchmark used here reports kernel time and total time (kernel + transfers) separately,
+so you can quantify this overhead directly.</p>
+<div class="admonition tip">
+<p class="admonition-title">Naming convention</p>
+<p>A common convention is to suffix device pointers with <code>_d</code> (e.g., <code>a_d</code>, <code>b_d</code>)
+to distinguish them from host pointers. Dereferencing a device pointer on the
+host (or vice versa) causes a segfault or silent memory corruption.</p>
+</div>
+<hr />
+<h2 id="3-the-cuda-stream-triad-kernel">3. The CUDA Stream Triad Kernel<a class="headerlink" href="#3-the-cuda-stream-triad-kernel" title="Permanent link">&para;</a></h2>
+<p>The Stream Triad computes:</p>
+<div class="arithmatex">\[c_i = a_i + s \cdot b_i \quad \forall \, i \in [0, N)\]</div>
+<p>where <span class="arithmatex">\(s\)</span> is a scalar constant. The kernel touches each array element exactly once —
+no reuse, no reduction — making it a pure <strong>memory bandwidth</strong> benchmark. The
+effective bandwidth determines how fast the GPU can move data from DRAM to registers.</p>
+<p>Below is the starter code from <code>examples/CUDA/Example1/StreamTriad.cu</code>. Locations
+marked <code>TODO</code> are left for you to complete.</p>
+<div class="language-cuda highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kr">__global__</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">StreamTriad</span><span class="p">(</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">scalar</span><span class="p">,</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">a</span><span class="p">,</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">b</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">)</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">{</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="nb">blockDim</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="c1">// TODO: c[i] = a[i] + scalar*b[i]</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="p">}</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="kt">int</span><span class="w"> </span><span class="n">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">argv</span><span class="p">[]){</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">stream_array_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">80000000</span><span class="p">;</span><span class="w">  </span><span class="c1">// 80M elements</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">scalar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.0</span><span class="p">;</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">stream_array_size</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">stream_array_size</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">stream_array_size</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">&lt;</span><span class="n">stream_array_size</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">    </span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span><span class="w">  </span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0</span><span class="p">;</span><span class="w">  </span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="w">  </span><span class="n">cudaError_t</span><span class="w"> </span><span class="n">err</span><span class="p">;</span>
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>
+</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="w">  </span><span class="c1">// TODO: Allocate a_d, b_d, c_d on the device with cudaMalloc</span>
+</span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">a_d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nullptr</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">b_d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nullptr</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">c_d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nullptr</span><span class="p">;</span>
+</span><span id="__span-2-30"><a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>
+</span><span id="__span-2-31"><a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">blocksize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">512</span><span class="p">;</span>
+</span><span id="__span-2-32"><a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a><span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">gridsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">stream_array_size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">blocksize</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">blocksize</span><span class="p">;</span>
+</span><span id="__span-2-33"><a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>
+</span><span id="__span-2-34"><a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a><span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">NTIMES</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="o">++</span><span class="p">){</span>
+</span><span id="__span-2-35"><a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a><span class="w">    </span><span class="c1">// TODO: Copy a and b to device (cudaMemcpyHostToDevice)</span>
+</span><span id="__span-2-36"><a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a><span class="w">    </span><span class="n">cudaDeviceSynchronize</span><span class="p">();</span>
+</span><span id="__span-2-37"><a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a>
+</span><span id="__span-2-38"><a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a><span class="w">    </span><span class="c1">// TODO: Launch StreamTriad&lt;&lt;&lt;gridsize, blocksize&gt;&gt;&gt;(...)</span>
+</span><span id="__span-2-39"><a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>
+</span><span id="__span-2-40"><a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a><span class="w">    </span><span class="n">cudaDeviceSynchronize</span><span class="p">();</span>
+</span><span id="__span-2-41"><a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>
+</span><span id="__span-2-42"><a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a><span class="w">    </span><span class="c1">// TODO: Copy c back to host (cudaMemcpyDeviceToHost)</span>
+</span><span id="__span-2-43"><a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-2-44"><a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a>
+</span><span id="__span-2-45"><a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">a_d</span><span class="p">)</span><span class="w"> </span><span class="n">cudaFree</span><span class="p">(</span><span class="n">a_d</span><span class="p">);</span>
+</span><span id="__span-2-46"><a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">b_d</span><span class="p">)</span><span class="w"> </span><span class="n">cudaFree</span><span class="p">(</span><span class="n">b_d</span><span class="p">);</span>
+</span><span id="__span-2-47"><a id="__codelineno-2-47" name="__codelineno-2-47" href="#__codelineno-2-47"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">c_d</span><span class="p">)</span><span class="w"> </span><span class="n">cudaFree</span><span class="p">(</span><span class="n">c_d</span><span class="p">);</span>
+</span><span id="__span-2-48"><a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a><span class="w">  </span><span class="n">free</span><span class="p">(</span><span class="n">a</span><span class="p">);</span><span class="w"> </span><span class="n">free</span><span class="p">(</span><span class="n">b</span><span class="p">);</span><span class="w"> </span><span class="n">free</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+</span><span id="__span-2-49"><a id="__codelineno-2-49" name="__codelineno-2-49" href="#__codelineno-2-49"></a><span class="p">}</span>
+</span></code></pre></div>
+<hr />
+<h2 id="4-assignment">4. Assignment<a class="headerlink" href="#4-assignment" title="Permanent link">&para;</a></h2>
+<p>Work through the TODOs in order. Build and test after each step to catch errors early.</p>
+<h3 id="step-1-complete-the-kernel">Step 1 — Complete the kernel<a class="headerlink" href="#step-1-complete-the-kernel" title="Permanent link">&para;</a></h3>
+<p>Inside <code>StreamTriad</code>, add the triad computation for thread <code>i</code>:</p>
+<div class="language-cuda highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">scalar</span><span class="o">*</span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span></code></pre></div>
+<p>This is the only line inside the kernel body after the bounds check.</p>
+<h3 id="step-2-allocate-device-memory">Step 2 — Allocate device memory<a class="headerlink" href="#step-2-allocate-device-memory" title="Permanent link">&para;</a></h3>
+<p>After the host <code>malloc</code> calls, allocate three device arrays. Check every
+<code>cudaMalloc</code> return value:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a_d</span><span class="p">,</span><span class="w"> </span><span class="n">stream_array_size</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">cudaSuccess</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Error allocating a_d: %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cudaGetErrorString</span><span class="p">(</span><span class="n">err</span><span class="p">));</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>Repeat for <code>b_d</code> and <code>c_d</code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Always check cudaMalloc</p>
+<p>GPU memory is limited. <code>cudaMalloc</code> silently succeeds even on some error paths
+on older drivers. Always check the return code and print the error string with
+<code>cudaGetErrorString(err)</code> — it gives a human-readable description.</p>
+</div>
+<h3 id="step-3-copy-host-device">Step 3 — Copy host → device<a class="headerlink" href="#step-3-copy-host-device" title="Permanent link">&para;</a></h3>
+<p>Inside the benchmark loop, before the first <code>cudaDeviceSynchronize()</code>:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">cudaMemcpy</span><span class="p">(</span><span class="n">a_d</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">stream_array_size</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">),</span><span class="w"> </span><span class="n">cudaMemcpyHostToDevice</span><span class="p">);</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">cudaMemcpy</span><span class="p">(</span><span class="n">b_d</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="n">stream_array_size</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">),</span><span class="w"> </span><span class="n">cudaMemcpyHostToDevice</span><span class="p">);</span>
+</span></code></pre></div>
+<h3 id="step-4-launch-the-kernel">Step 4 — Launch the kernel<a class="headerlink" href="#step-4-launch-the-kernel" title="Permanent link">&para;</a></h3>
+<p>After the first <code>cudaDeviceSynchronize()</code>:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">StreamTriad</span><span class="o">&lt;&lt;&lt;</span><span class="n">gridsize</span><span class="p">,</span><span class="w"> </span><span class="n">blocksize</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">stream_array_size</span><span class="p">,</span><span class="w"> </span><span class="n">scalar</span><span class="p">,</span><span class="w"> </span><span class="n">a_d</span><span class="p">,</span><span class="w"> </span><span class="n">b_d</span><span class="p">,</span><span class="w"> </span><span class="n">c_d</span><span class="p">);</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cudaGetLastError</span><span class="p">();</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">cudaSuccess</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Kernel error: %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cudaGetErrorString</span><span class="p">(</span><span class="n">err</span><span class="p">));</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="p">}</span>
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Kernel launch errors are asynchronous</p>
+<p><code>cudaGetLastError()</code> catches configuration errors (invalid grid/block size,
+too much shared memory). Errors inside the kernel body (e.g., an out-of-bounds
+access causing a segfault) are not reported until the next synchronization point.
+Use <code>cuda-memcheck</code> or <code>compute-sanitizer</code> to catch runtime kernel errors.</p>
+</div>
+<h3 id="step-5-copy-device-host">Step 5 — Copy device → host<a class="headerlink" href="#step-5-copy-device-host" title="Permanent link">&para;</a></h3>
+<p>After the second <code>cudaDeviceSynchronize()</code>:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">cudaMemcpy</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">c_d</span><span class="p">,</span><span class="w"> </span><span class="n">stream_array_size</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">),</span><span class="w"> </span><span class="n">cudaMemcpyDeviceToHost</span><span class="p">);</span>
+</span></code></pre></div>
+<details class="success">
+<summary>Show complete solution</summary>
+<p>The complete solution is at <code>examples/CUDA/Example1/solutions/StreamTriad.cu</code>.
+Key additions relative to the starter code:</p>
+<div class="language-cuda highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1">// In the kernel body (after the bounds check):</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">scalar</span><span class="o">*</span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1">// Device allocation (repeat for b_d, c_d):</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a_d</span><span class="p">,</span><span class="w"> </span><span class="n">stream_array_size</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">cudaSuccess</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Error allocating a_d: %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cudaGetErrorString</span><span class="p">(</span><span class="n">err</span><span class="p">));</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="p">}</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="c1">// Host-to-device copies (inside the loop, before first sync):</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="n">cudaMemcpy</span><span class="p">(</span><span class="n">a_d</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">stream_array_size</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">),</span><span class="w"> </span><span class="n">cudaMemcpyHostToDevice</span><span class="p">);</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="n">cudaMemcpy</span><span class="p">(</span><span class="n">b_d</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="n">stream_array_size</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">),</span><span class="w"> </span><span class="n">cudaMemcpyHostToDevice</span><span class="p">);</span>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="c1">// Kernel launch (after first sync):</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="n">StreamTriad</span><span class="o">&lt;&lt;&lt;</span><span class="n">gridsize</span><span class="p">,</span><span class="w"> </span><span class="n">blocksize</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">stream_array_size</span><span class="p">,</span><span class="w"> </span><span class="n">scalar</span><span class="p">,</span><span class="w"> </span><span class="n">a_d</span><span class="p">,</span><span class="w"> </span><span class="n">b_d</span><span class="p">,</span><span class="w"> </span><span class="n">c_d</span><span class="p">);</span>
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="c1">// Device-to-host copy (after second sync):</span>
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="n">cudaMemcpy</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">c_d</span><span class="p">,</span><span class="w"> </span><span class="n">stream_array_size</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">),</span><span class="w"> </span><span class="n">cudaMemcpyDeviceToHost</span><span class="p">);</span>
+</span></code></pre></div>
+</details>
+<hr />
+<h2 id="5-build-and-run">5. Build and Run<a class="headerlink" href="#5-build-and-run" title="Permanent link">&para;</a></h2>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Workstation</label><label for="__tabbed_1_2">SLURM cluster</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>The <code>Makefile</code> auto-detects your GPU's compute capability via <code>nvidia-smi</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nb">cd</span><span class="w"> </span>examples/CUDA/Example1
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>make
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>./stream_triad
+</span></code></pre></div>
+<p>You need the CUDA Toolkit installed (<code>nvcc</code> on PATH). Verify with <code>nvidia-smi</code>.</p>
+</div>
+<div class="tabbed-block">
+<p>See <code>examples/CUDA/Example1/run.slurm</code>. Request a GPU node with <code>--gres=gpu:1</code>
+and load the appropriate CUDA module. Adjust the module name for your cluster's
+software stack.</p>
+</div>
+</div>
+</div>
+<hr />
+<h2 id="6-expected-output-and-analysis">6. Expected Output and Analysis<a class="headerlink" href="#6-expected-output-and-analysis" title="Permanent link">&para;</a></h2>
+<p>A successful run prints something like:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>Average runtime is 1.234 msecs  data transfer is 45.678 msecs
+</span></code></pre></div>
+<h3 id="memory-bandwidth">Memory Bandwidth<a class="headerlink" href="#memory-bandwidth" title="Permanent link">&para;</a></h3>
+<p>The Stream Triad reads arrays <code>a</code> and <code>b</code> and writes array <code>c</code> — three memory
+operations per element. Effective GPU memory bandwidth is:</p>
+<div class="arithmatex">\[\text{BW} = \frac{3 \times N \times 8 \;\text{bytes}}{\text{kernel time (s)}} \;\text{GB/s}\]</div>
+<p>For 80M doubles: <span class="arithmatex">\(3 \times 80 \times 10^6 \times 8 = 1.92\)</span> GB moved per kernel call.
+Dividing by the kernel time in seconds gives GB/s. Compare this to your GPU's rated
+HBM or GDDR bandwidth (available from <code>nvidia-smi --query-gpu=memory.total --format=csv</code>
+or the GPU spec sheet).</p>
+<div class="admonition note">
+<p class="admonition-title">Transfer cost dominates</p>
+<p>Data transfer time is typically 20–50<span class="arithmatex">\(\times\)</span> the kernel time for this example.
+The kernel is extremely fast on the GPU, but moving 1.92 GB over PCIe at
+~16 GB/s takes ~120 ms. For small datasets, or kernels that are called only
+once, the GPU may not be worth the transfer overhead. <a href="../11-nsight/">Module 11</a>
+shows this same kernel-versus-transfer split on the Nsight Systems timeline.</p>
+</div>
+<h3 id="discussion-questions">Discussion Questions<a class="headerlink" href="#discussion-questions" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>The Makefile rounds <code>gridsize</code> up so every array element is covered. What would
+   happen if <code>gridsize</code> were too small — say, <code>n / blocksize</code> without rounding up?</p>
+</li>
+<li>
+<p>How does block size affect occupancy and performance? Try 128, 256, 512, and 1024
+   threads per block and record the kernel time for each.</p>
+</li>
+<li>
+<p>Data transfer time dominates total runtime. Propose a strategy to reduce it.
+   (Hint: think about which arrays actually change between loop iterations.)</p>
+</li>
+</ol>
+<details>
+<summary>Show solutions</summary>
+<p><strong>Question 1</strong>: <code>gridsize = n / blocksize</code> (integer division, no ceiling) leaves
+the last partial block unscheduled. If <span class="arithmatex">\(n\)</span> is not divisible by <code>blocksize</code>, the
+final <span class="arithmatex">\(n \bmod \text{blocksize}\)</span> elements never receive a thread and retain their
+initial value in <code>c</code> (zero). The verification loop at the bottom of <code>main</code> would
+catch these as errors. The kernel's <code>if (i &gt;= n) return</code> guard prevents
+out-of-bounds reads, but without enough blocks those indices are simply never
+reached. The standard ceiling formula <code>(n + blocksize - 1) / blocksize</code> ensures
+a partial block is always launched, and the guard discards the excess threads in
+that block.</p>
+<p><strong>Question 2</strong>: Experiment-dependent; numbers vary by GPU. For the Stream Triad
+(a bandwidth-bound kernel), you should see roughly similar kernel times across
+128, 256, and 512 threads per block once occupancy is sufficient to hide memory
+latency — typically 4–8 active warps per SM is enough. Very small blocks (32
+threads) may show slower performance because there are too few in-flight warps
+to cover memory latency. 1024 threads per block may also slow slightly on older
+GPUs due to register file pressure limiting the number of concurrent blocks.
+The occupancy calculator in Nsight Compute (or <code>nvcc --resource-usage</code>) gives
+exact limits for your architecture.</p>
+<p><strong>Question 3</strong>: Arrays <code>a</code> and <code>b</code> are initialized once before the timing loop
+and never modified by the kernel. Only <code>c</code> changes each iteration. The transfer
+strategy: copy <code>a</code> and <code>b</code> to the device <strong>once</strong> before the loop begins; copy
+<code>c</code> back to the host <strong>once</strong> after the last iteration (or inside the loop only
+for verification). This eliminates <span class="arithmatex">\(2 \times \text{NTIMES}\)</span> host-to-device
+transfers of <code>a</code> and <code>b</code> — 32 copies of 640 MB each — reducing transfer
+overhead from <span class="arithmatex">\(3 \times \text{NTIMES}\)</span> copies to <span class="arithmatex">\(3\)</span> total. For the 16-iteration
+timing loop this is a 16× reduction in data-transfer volume for the inputs.</p>
+</details>
+<hr />
+<h2 id="7-a-compute-bound-kernel-matrix-multiplication">7. A Compute-Bound Kernel: Matrix Multiplication<a class="headerlink" href="#7-a-compute-bound-kernel-matrix-multiplication" title="Permanent link">&para;</a></h2>
+<p>The Stream Triad sits at the far <em>left</em> of the <a href="../02-autovec/">roofline</a>: with an
+arithmetic intensity of ~0.08 FLOP/byte it is firmly <strong>bandwidth-bound</strong>. Dense
+<strong>matrix multiplication</strong> lives at the opposite end. Multiplying two <span class="arithmatex">\(N \times N\)</span>
+matrices performs <span class="arithmatex">\(2N^3\)</span> floating-point operations on only <span class="arithmatex">\(3N^2\)</span> matrix elements,
+so if every element were read from memory just once the arithmetic intensity would
+be</p>
+<div class="arithmatex">\[I = \frac{2N^3}{3N^2 \times 8 \;\text{bytes}} = \frac{N}{12} \;\text{FLOP/byte}.\]</div>
+<p>For <span class="arithmatex">\(N = 1024\)</span> that is ~85 FLOP/byte — far to the <em>right</em> of the ridge point, i.e.
+<strong>compute-bound</strong>. Matrix multiply is the canonical compute-bound kernel, and it is
+the same problem the <a href="../08-kokkos/">Kokkos and MATAR modules</a> solve, which makes it
+a useful bridge: here you write it in raw CUDA; there you write it once and let a
+portability layer target any backend.</p>
+<p>The second example, <code>examples/CUDA/Example2/matrix_multiply.cu</code>, computes
+<span class="arithmatex">\(C = A \times B\)</span> for <span class="arithmatex">\(N = 1024\)</span> and verifies the first <span class="arithmatex">\(3\times3\)</span> block against a CPU
+reference.</p>
+<h3 id="mapping-threads-to-a-2d-problem">Mapping threads to a 2D problem<a class="headerlink" href="#mapping-threads-to-a-2d-problem" title="Permanent link">&para;</a></h3>
+<p>The triad was one-dimensional, so a 1D grid sufficed. A matrix is naturally 2D, so
+this kernel uses <strong>2D blocks and a 2D grid</strong>: each thread computes one output
+element <code>C[row][col]</code>.</p>
+<div class="language-cuda highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="cp">#define BLOCK_SIZE 32   </span><span class="c1">// 32 x 32 = 1024 threads per block</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="kr">__global__</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">matrixMultiply</span><span class="p">(</span><span class="n">real_t</span><span class="w"> </span><span class="o">*</span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="n">real_t</span><span class="w"> </span><span class="o">*</span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">real_t</span><span class="w"> </span><span class="o">*</span><span class="n">C</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">blockIdx</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">blockDim</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">blockDim</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">    </span><span class="n">real_t</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">size</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">      </span><span class="n">sum</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="n">row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">col</span><span class="p">];</span><span class="w">   </span><span class="c1">// row of A . column of B</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">    </span><span class="n">C</span><span class="p">[</span><span class="n">row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">col</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sum</span><span class="p">;</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>The launch configuration mirrors the 1D case, rounded up in <em>both</em> dimensions:</p>
+<div class="language-cuda highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kt">dim3</span><span class="w"> </span><span class="nf">threadsPerBlock</span><span class="p">(</span><span class="n">BLOCK_SIZE</span><span class="p">,</span><span class="w"> </span><span class="n">BLOCK_SIZE</span><span class="p">);</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kt">dim3</span><span class="w"> </span><span class="n">blocksPerGrid</span><span class="p">((</span><span class="n">size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">BLOCK_SIZE</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">BLOCK_SIZE</span><span class="p">,</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">                   </span><span class="p">(</span><span class="n">size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">BLOCK_SIZE</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">BLOCK_SIZE</span><span class="p">);</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">matrixMultiply</span><span class="o">&lt;&lt;&lt;</span><span class="n">blocksPerGrid</span><span class="p">,</span><span class="w"> </span><span class="n">threadsPerBlock</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">d_A</span><span class="p">,</span><span class="w"> </span><span class="n">d_B</span><span class="p">,</span><span class="w"> </span><span class="n">d_C</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">);</span>
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">High arithmetic intensity is a property of the algorithm, not this kernel</p>
+<p>The <span class="arithmatex">\(N/12\)</span> figure assumes each matrix element is read once. This <strong>naive</strong> kernel
+does not achieve that: every thread re-reads an entire row of <span class="arithmatex">\(A\)</span> and column of
+<span class="arithmatex">\(B\)</span> straight from global memory, so each element of <span class="arithmatex">\(A\)</span> and <span class="arithmatex">\(B\)</span> is fetched <span class="arithmatex">\(N\)</span>
+times. Its <em>effective</em> arithmetic intensity is closer to <span class="arithmatex">\(1/8\)</span> FLOP/byte —
+memory-bound in practice — which is why it reaches only a fraction of the GPU's
+peak FLOP/s. The standard fix is <strong>shared-memory tiling</strong>: each block cooperatively
+loads a tile of <span class="arithmatex">\(A\)</span> and <span class="arithmatex">\(B\)</span> into fast on-chip shared memory and reuses it, raising
+the realized intensity toward the algorithmic ceiling. That optimization is the
+natural next step beyond this example.</p>
+</div>
+<h3 id="build-and-run">Build and run<a class="headerlink" href="#build-and-run" title="Permanent link">&para;</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Workstation</label><label for="__tabbed_2_2">SLURM cluster</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>The <code>Makefile</code> auto-detects your GPU's compute capability via <code>nvidia-smi</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">cd</span><span class="w"> </span>examples/CUDA/Example2
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>make
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>./matrix_multiply
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>See <code>examples/CUDA/Example2/run.slurm</code>. Request a GPU node with <code>--gres=gpu:1</code>
+and load the appropriate CUDA module for your cluster.</p>
+</div>
+</div>
+</div>
+<p>A successful run reports the achieved throughput and the verification block:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>Matrix Size: 1024 x 1024
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>Execution Time: 7.78 ms
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>Performance: 275.75 GFLOPS
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>Verification (showing first 3x3 elements of result):
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>C[0][0] = 257.26 (expected: 257.26)
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>...
+</span></code></pre></div>
+<p>The reported GFLOPS will vary with your GPU. Compare it to the card's peak FP64 (or
+FP32) rate: the gap between the two is the headroom that shared-memory tiling and
+other reuse optimizations recover.</p>
+<h3 id="assignment">Assignment<a class="headerlink" href="#assignment" title="Permanent link">&para;</a></h3>
+<p>The starter <code>examples/CUDA/Example2/matrix_multiply.cu</code> compiles as-is but does no
+GPU work yet; complete the <code>TODO</code>s:</p>
+<ol>
+<li><strong>Kernel body</strong> — compute <code>sum</code> as the dot product of row <code>row</code> of <code>A</code> and column
+   <code>col</code> of <code>B</code>, then store it to <code>C[row * size + col]</code>.</li>
+<li><strong>Device memory</strong> — allocate <code>d_A</code>, <code>d_B</code>, <code>d_C</code> with <code>cudaMalloc</code>.</li>
+<li><strong>Transfers</strong> — copy <code>h_A</code>/<code>h_B</code> to the device; the result copy back is already in
+   place.</li>
+<li><strong>Launch configuration</strong> — set <code>threadsPerBlock</code> and <code>blocksPerGrid</code>, then launch
+   the kernel.</li>
+</ol>
+<details class="success">
+<summary>Show complete solution</summary>
+<p>The complete program is at <code>examples/CUDA/Example2/solution/matrix_multiply.cu</code>.</p>
+</details>
+<p>Extensions to explore:</p>
+<ul>
+<li>Change the <code>real_t</code> typedef from <code>double</code> to <code>float</code> and re-measure. How does the
+  throughput change, and why? (Hint: consumer GPUs have far more FP32 than FP64
+  units.)</li>
+<li>Sketch (or implement) a shared-memory tiled version and predict its effect using
+  the roofline.</li>
+</ul>
+<h3 id="discussion-questions_1">Discussion Questions<a class="headerlink" href="#discussion-questions_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li>The triad and the matrix multiply use the <em>same</em> GPU yet land on opposite sides of
+   the roofline. Which hardware resource limits each, and why does adding more
+   floating-point units help one but not the other?</li>
+<li>This kernel uses 32&times;32 = 1024 threads per block. What constrains the maximum
+   block size, and what happens to occupancy if you also need shared memory per block?</li>
+<li>The naive kernel re-reads <span class="arithmatex">\(A\)</span> and <span class="arithmatex">\(B\)</span> from global memory <span class="arithmatex">\(N\)</span> times. Estimate the
+   total global-memory traffic with and without perfect reuse, and relate the two
+   numbers to the arithmetic intensities quoted above.</li>
+</ol>
+<details>
+<summary>Show solutions</summary>
+<p><strong>Question 1</strong>: Both kernels run on the same GPU but are limited by different
+hardware resources. The Stream Triad reads 24 bytes and writes 8 bytes per
+2 FLOPs: arithmetic intensity ≈ 0.06 FLOP/byte. It sits on the left
+(bandwidth-limited) side of the roofline. Adding more FPUs does nothing —
+the GPU is waiting on memory, not arithmetic. Dense matrix multiply (with
+tiling and reuse) has intensity <span class="arithmatex">\(I \approx N/12\)</span> FLOP/byte, placing it on
+the right (compute-limited) side. Adding more FPUs directly increases
+throughput. The same hardware delivers fundamentally different performance
+curves for the two kernels because they are limited by different physical
+ceilings.</p>
+<p><strong>Question 2</strong>: The maximum threads per block is 1024 on all current NVIDIA
+GPUs. Two hardware resources constrain how many blocks fit simultaneously on
+one SM: <strong>registers</strong> (each SM has 65,536; 1024 threads × 32 registers/thread
+= 32,768 per block, so only 2 blocks per SM) and <strong>shared memory</strong> (each SM
+has 96–228 KB depending on architecture; if each block requests more than half,
+only 1 block fits). The occupancy — active warps / maximum warps — drops when
+either resource is exhausted. Adding shared memory per block directly trades
+occupancy for data reuse, which is the tiling trade-off. Nsight Compute's
+<em>Occupancy</em> section shows which resource is the binding constraint.</p>
+<p><strong>Question 3</strong>: Let <span class="arithmatex">\(N = 1024\)</span>. With <strong>perfect reuse</strong> (each element read once
+from global memory): reads of <span class="arithmatex">\(A\)</span> and <span class="arithmatex">\(B\)</span> = <span class="arithmatex">\(2N^2 \times 8\)</span> bytes <span class="arithmatex">\(= 16\)</span> MB;
+writes of <span class="arithmatex">\(C\)</span> = <span class="arithmatex">\(N^2 \times 8\)</span> bytes <span class="arithmatex">\(= 8\)</span> MB; total = 24 MB.
+Arithmetic intensity = <span class="arithmatex">\(2N^3 / 24\text{ MB} \approx 85\)</span> FLOP/byte.
+For the <strong>naive kernel</strong> (no reuse): each of the <span class="arithmatex">\(N^2\)</span> output threads reads
+one full row of <span class="arithmatex">\(A\)</span> (<span class="arithmatex">\(N\)</span> doubles) and one full column of <span class="arithmatex">\(B\)</span> (<span class="arithmatex">\(N\)</span> doubles),
+so total reads = <span class="arithmatex">\(2N^3 \times 8\)</span> bytes <span class="arithmatex">\(= 2 \times 1024^3 \times 8 \approx
+16\)</span> GB. Arithmetic intensity = <span class="arithmatex">\(2N^3 / 16\text{ GB} = 1/8\)</span> FLOP/byte.
+This matches the "~1/8 FLOP/byte" noted in the text and explains why the naive
+kernel is memory-bound despite the algorithm being compute-bound at the
+theoretical level.</p>
+</details>
+<hr />
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<h3 id="reference-materials">Reference materials<a class="headerlink" href="#reference-materials" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/">CUDA C++ Programming Guide</a> — the core language and execution-model reference.</li>
+<li><a href="https://docs.nvidia.com/cuda/cuda-runtime-api/">CUDA Runtime API</a> — reference for the runtime calls below.</li>
+<li><a href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/">CUDA C++ Best Practices Guide</a> — performance and correctness guidance.</li>
+</ul>
+<h3 id="runtime-api-calls-used-in-this-module">Runtime API calls used in this module<a class="headerlink" href="#runtime-api-calls-used-in-this-module" title="Permanent link">&para;</a></h3>
+<p>The memory-management and error-handling calls used here — <code>cudaMalloc</code>, <code>cudaMemcpy</code>, <code>cudaFree</code>, <code>cudaGetLastError</code>, <code>cudaGetErrorString</code>, and <code>cudaDeviceSynchronize</code> — are documented in the <a href="https://docs.nvidia.com/cuda/cuda-runtime-api/">CUDA Runtime API</a> reference, under its Memory Management and Error Handling sections.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../03-openmp/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 3: OpenMP — CPU Parallelism">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                3: OpenMP — CPU Parallelism
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../05-stdpar/" class="md-footer__link md-footer__link--next" aria-label="Next: 5: C++17 std::par">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                5: C++17 std::par
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Developed at the High Performance Computing Collaboratory (HPC<sup>2</sup>), Mississippi State University — serving the University, State, and Nation through excellence in computational science and engineering.
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "content.code.annotate", "content.tabs.link", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
