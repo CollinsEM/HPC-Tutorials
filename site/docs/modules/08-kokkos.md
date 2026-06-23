@@ -131,6 +131,9 @@ This is where portability pays off. The example ships two scripts:
 - **`kokkos-install.sh`** clones Kokkos and builds it for a chosen backend (`-t serial|openmp|pthreads|cuda|hip`), setting flags like `-DKokkos_ENABLE_CUDA=ON` or `-DKokkos_ENABLE_OPENMP=ON`.
 - **`build.sh`** invokes the installer, then configures and compiles `matmul.cpp` against that Kokkos install.
 
+!!! warning "C++20 compiler required"
+    The scripts clone Kokkos from its `main` branch, which is Kokkos 5.x. Kokkos 5.x enforces **C++20** as a minimum standard, so your compiler must support it: GCC ≥ 10, Clang ≥ 10, or MSVC 2019 v16.11 (released 2020). On an HPC cluster, load a sufficiently recent compiler module before running the scripts. If you are stuck on GCC 9 or older, you will need to either upgrade the compiler or pin Kokkos to the last C++17-compatible release (4.x).
+
 The **same `matmul.cpp`** produces a CPU or GPU binary depending only on `-t`:
 
 === "Workstation — multicore CPU"

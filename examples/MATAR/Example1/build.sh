@@ -72,7 +72,7 @@ cat > "${SCRIPT_DIR}/CMakeLists.txt" << EOF
 cmake_minimum_required(VERSION 3.16)
 project(MATARExample1 CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find Kokkos
