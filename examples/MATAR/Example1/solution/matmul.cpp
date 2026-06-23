@@ -4,62 +4,51 @@
 #include "matar.h"
 #include "timer.hpp"
 
-// Required for MATAR data structures
-using namespace mtr; 
+using namespace mtr;
 
 #define MATRIX_SIZE 1024
 
-// Function to calculate theoretical FLOPS
 double calculate_flops(int size, double time_ms) {
-    // For matrix multiplication C = A * B:
-    // Each element C(i,j) requires 2*size operations (size multiplications + size-1 additions)
-    // Total operations = size * size * (2*size)
     double total_ops = static_cast<double>(size) * size * (2.0 * size);
-    double time_seconds = time_ms / 1000.0;
-    return total_ops / time_seconds;
+    return total_ops / (time_ms / 1000.0);
 }
 
-// main
 int main(int argc, char* argv[])
 {
     Kokkos::initialize(argc, argv);
     { // kokkos scope
-    printf("Starting MATAR Matrix Multiplication test \n");
+    printf("Starting MATAR Matrix Multiplication (fixed)\n");
     printf("Matrix size: %d x %d\n", MATRIX_SIZE, MATRIX_SIZE);
 
-    // Create arrays on the device, where the device is either the CPU or GPU depending on how it is compiled
     CArrayKokkos<int> A(MATRIX_SIZE, MATRIX_SIZE);
     CArrayKokkos<int> B(MATRIX_SIZE, MATRIX_SIZE);
     CArrayKokkos<int> C(MATRIX_SIZE, MATRIX_SIZE);
 
-    // Initialize arrays (NOTE: This is on the device)
     A.set_values(2);
     B.set_values(2);
     C.set_values(0);
 
-    // Create and start timer
     Timer timer;
     timer.start();
 
-    // Perform C = A * B
-    // NOTE: This three-index FOR_ALL is intentionally buggy — see below.
+    // FIX: use a 2D FOR_ALL (parallel over i,j) with a serial loop over k.
+    // Each (i,j) thread owns exactly one output element — no shared writes,
+    // no race condition.
     FOR_ALL(i, 0, MATRIX_SIZE,
-            j, 0, MATRIX_SIZE,
-            k, 0, MATRIX_SIZE, {
-        C(i,j) += A(i,k) * B(k,j);
+            j, 0, MATRIX_SIZE, {
+        int sum = 0;
+        for (int k = 0; k < MATRIX_SIZE; k++)
+            sum += A(i,k) * B(k,j);
+        C(i,j) = sum;
     });
 
-    // Fence required before stopping the timer: on async backends (e.g. CUDA)
-    // the kernel launch returns immediately and the timer would capture only
-    // launch overhead, not actual execution time.
     Kokkos::fence();
     double time_ms = timer.stop();
 
-    // Copy result to host for verification
     auto C_view = C.get_kokkos_view();
     auto C_host = Kokkos::create_mirror_view_and_copy(Kokkos::HostSpace(), C_view);
 
-    const int expected = 2 * 2 * MATRIX_SIZE;  // A(i,k)=2, B(k,j)=2, sum over k
+    const int expected = 2 * 2 * MATRIX_SIZE;
     int n_wrong = 0;
     for (int i = 0; i < MATRIX_SIZE; i++)
         for (int j = 0; j < MATRIX_SIZE; j++)
@@ -79,6 +68,5 @@ int main(int argc, char* argv[])
 
     } // end kokkos scope
     Kokkos::finalize();
-
     return 0;
 }

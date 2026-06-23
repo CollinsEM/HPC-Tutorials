@@ -183,7 +183,9 @@ This is undeniably compact. But it harbors a bug, and it is instructive precisel
 !!! warning "This `FOR_ALL` has a data race"
     The three-index `FOR_ALL(i, …, j, …, k, …)` expands to a Kokkos `MDRangePolicy<Rank<3>>` — it parallelizes **all three** loops, `k` included. So many threads with different `k` simultaneously execute `C(i,j) += …` on the *same* element, a classic read-modify-write race.
 
-    On the **serial** backend there is no concurrency, so it prints the right answer ($C_{ij} = 1024 \times 2 \times 2 = 4096$) and looks fine. Build it with `-t openmp` or `-t cuda` and the results become wrong and nondeterministic. The terse syntax hid a parallelization decision that the explicit Kokkos version (`Rank<2>` over `i,j`, sequential `k`) got right.
+    On the **serial** backend there is no concurrency, so it prints the right answer ($C_{ij} = 1024 \times 2 \times 2 = 4096$) and looks fine. The **OpenMP** backend also appears correct in practice: Kokkos's `MDRangePolicy` schedules work in tiles, and with default tile sizes the k iterations for a given (i,j) pair happen to land in the same tile — serializing the race away. The code is still wrong, but the bug is invisible.
+
+    Build with **`-t cuda`** and the race explodes: hundreds of threads with different `k` race to update `C(i,j)` simultaneously, and only the last write survives. The result is nondeterministic and off by a factor of ~1024 — values near 4 instead of 4096, changing run-to-run. This is the canonical GPU surprise: a latent race that passes all CPU testing then fails catastrophically on the first GPU run.
 
     **The fix** is to keep `k` sequential — parallelize only `i` and `j`:
     ```cpp
@@ -209,7 +211,7 @@ MATAR is built the same way as Kokkos (`build.sh -t <backend>`), since it compil
 
 2. **(If you have a GPU)** Build with `-t cuda` and compare. Explain why matmul shows a much larger CPU→GPU speedup than the Stream Triad did in earlier modules. (Hint: arithmetic intensity and the roofline.)
 
-3. **Reproduce the MATAR race.** Build the MATAR example `-t serial` and confirm `C(i,j) = 4096`. Then build `-t openmp` with several threads and observe the results change run-to-run. Apply the fix above and confirm correctness returns.
+3. **Reproduce the MATAR race.** Build the MATAR example `-t serial` and confirm `C(i,j) = 4096` in the corner output. Build again with `-t openmp` — the result still looks correct (the race is latent, hidden by tiling). Now build with `-t cuda` and observe values near 4 instead of 4096, changing run-to-run. Apply the fix above, rebuild with `-t cuda`, and confirm all elements return to 4096.
 
 ??? success "Why matmul scales to the GPU but the triad barely did"
     The Stream Triad moves 24 bytes per 2 FLOPs — intensity ≈ 0.08 FLOP/byte — so it is pinned to the memory-bandwidth ceiling on every device, and a GPU's main advantage there is just its higher memory bandwidth. Matmul does $2N^3$ FLOPs over $3N^2$ data — intensity grows with $N$ — so for $N = 1024$ it sits on the *compute* ceiling, where a GPU's thousands of FPUs deliver a large speedup over a CPU. Same hardware, opposite regime, because of arithmetic intensity.
