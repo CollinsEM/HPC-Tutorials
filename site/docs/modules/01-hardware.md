@@ -50,12 +50,13 @@ To make the latency ratios intuitive, scale 1 CPU cycle to 1 second:
 | NVMe SSD | ~2–3 days |
 | Spinning disk | ~1 year |
 
-An instruction that stalls on a DRAM fetch is waiting the equivalent of several
-minutes while the rest of the pipeline is idle. Vectorized loops that touch DRAM
-on every iteration are doing the equivalent of fetching each item from a warehouse
-three time zones away.
+A thread that stalls on a DRAM fetch is waiting the equivalent of
+several minutes while the rest of the pipeline is idle. Instructions
+that read data from an SSD drive are doing the equivalent of fetching
+each item from a warehouse three time zones away.
 
 !!! note
+
     These latencies are for *random access*. Sequential access saturates the
     hardware prefetcher, which issues read-ahead requests before the core asks
     for the data. Effective sequential bandwidth to L3 or DRAM can be 10–50× higher

@@ -250,8 +250,9 @@ A workload maps well to a GPU when:
     If the per-thread memory access pattern is random, then
     each thread could potentially request data from many different
     memory locations. This will often generate multiple non-coalesced
-    memory accesses per warp, wasting cache-line reads and forcing the
-    entire warp to block until all reads are completed.
+    memory accesses per warp, wasting
+    [cache-line reads](01-hardware.md#cache-line-mechanics) 
+    and forcing the entire warp to block until all reads are completed.
     
 !!! warning
 
