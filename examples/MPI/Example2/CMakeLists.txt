@@ -34,7 +34,7 @@ target_link_libraries(SendRecv1 PRIVATE "${MPI_CXX_LIBRARIES}")
 # Add a test:
 enable_testing()
 add_test(SimpleTest ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS}
-         ${CMAKE_CURRENT_BINARY_DIR}/SendRecv2 ${MPIEXEC_POSTFLAGS})
+         ${CMAKE_CURRENT_BINARY_DIR}/SendRecv1 ${MPIEXEC_POSTFLAGS})
 
 # Cleanup
 add_custom_target(distclean COMMAND rm -rf CMakeCache.txt CMakeFiles
