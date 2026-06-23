@@ -29,7 +29,38 @@ Valgrind is a collection of tools selected with `--tool=`:
 | `massif` | heap memory growth over time |
 
 !!! warning "Valgrind is CPU-only"
-    Valgrind instruments host CPU instructions. It cannot see inside a CUDA/HIP kernel or measure GPU memory. For GPU code use the Nsight tools in [Module 11](11-nsight.md); for native CPU hardware counters use LIKWID in [Module 9](09-profiling.md).
+    Valgrind instruments host CPU instructions. It cannot see inside a CUDA/HIP kernel or measure GPU memory. For GPU code use the Nsight tools in [Module 11](11-nsight.md); for native CPU hardware counters use LIKWID or `perf` as described in [Module 9](09-profiling.md).
+
+!!! tip "If Valgrind is not installed — compiler sanitizers"
+    GCC ≥ 4.8 and Clang ≥ 3.1 ship built-in sanitizers that cover the most
+    common Valgrind use cases at a fraction of the overhead. No external tool
+    is needed — just recompile:
+
+    | Valgrind tool | Compiler sanitizer | Flag | Overhead |
+    |---------------|--------------------|------|----------|
+    | `memcheck` (invalid access, leaks) | AddressSanitizer (ASan) | `-fsanitize=address -fno-omit-frame-pointer` | ~2× |
+    | `memcheck --track-origins` (uninitialized reads) | MemorySanitizer (MSan) | `-fsanitize=memory` | ~3× (Clang only) |
+    | `helgrind` / `drd` (data races) | ThreadSanitizer (TSan) | `-fsanitize=thread` | ~5–15× |
+    | `cachegrind` (cache misses) | No direct equivalent; use `perf stat -e cache-misses` | — | — |
+    | `callgrind` (hotspots) | `gprof` (`-pg`) or `perf record`/`perf report` | — | — |
+
+    Sanitizers are usually the first choice on a developer workstation because
+    they are faster, easier to set up, and produce actionable error messages.
+    Valgrind's `cachegrind` and `callgrind` remain useful on clusters where
+    compiler versions are older or `perf` access requires elevated permissions.
+
+    ASan example:
+    ```bash
+    gcc -g -O1 -fsanitize=address -fno-omit-frame-pointer stream_triad.c timer.c -o stream_triad_asan
+    ./stream_triad_asan
+    ```
+    TSan example (for a threaded program):
+    ```bash
+    gcc -g -O1 -fsanitize=thread your_omp_program.c -fopenmp -o prog_tsan
+    ./prog_tsan
+    ```
+    ASan and TSan cannot be used together in the same binary. Run separate
+    builds for memory and threading checks.
 
 ---
 
@@ -148,15 +179,54 @@ ms_print massif.out.<pid>
 
 ## Assignment
 
-1. **Clean baseline.** Build `examples/autovec/stream_triad.c` with `-g -O1` and run memcheck. It should be clean — confirm there are no leaks or invalid accesses, and note the "still reachable" total (the static arrays).
+Tasks 1–3 can be completed with either Valgrind or compiler sanitizers. Where
+both options are shown, try both and compare the error messages.
 
-2. **Inject a bug.** Change the triad loop bound from `i < STREAM_ARRAY_SIZE` to `i <= STREAM_ARRAY_SIZE` and rerun memcheck. Find the "Invalid write" report and confirm it points at the triad line. Revert.
+1. **Clean baseline.** Build `examples/autovec/stream_triad.c` with `-g -O1` and check for memory errors. It should be clean — confirm there are no invalid accesses, and note the "still reachable" total (the static arrays).
+   ```bash
+   # With Valgrind:
+   valgrind --leak-check=full --show-leak-kinds=all ./stream_triad
 
-3. **Uninitialized value.** In a copy of the code, remove the initialization of `b[]` and run with `--track-origins=yes`. Trace the "uninitialised value" origin back to the missing init loop.
+   # With AddressSanitizer (no Valgrind needed):
+   gcc -g -O1 -fsanitize=address -fno-omit-frame-pointer stream_triad.c timer.c -o stream_triad_asan
+   ./stream_triad_asan
+   ```
 
-4. **Hotspot.** Run callgrind on the clean benchmark and confirm with `callgrind_annotate` that the triad loop dominates the instruction count — the same conclusion LIKWID reached via bandwidth, arrived at a different way.
+2. **Inject a bug.** Change the triad loop bound from `i < STREAM_ARRAY_SIZE` to `i <= STREAM_ARRAY_SIZE`. Find the out-of-bounds write report and confirm it points at the triad line. Revert.
+   ```bash
+   # Either tool will catch this; ASan is faster:
+   valgrind ./stream_triad           # "Invalid write of size 8"
+   ./stream_triad_asan               # "heap-buffer-overflow" or "global-buffer-overflow"
+   ```
 
-5. **(Threads)** Build an OpenMP example ([Module 3](03-openmp.md)) and run it under helgrind. Identify which reports come from `libgomp` (noise) versus your code, and write a suppression for the runtime noise.
+3. **Uninitialized value.** In a copy of the code, remove the initialization of `b[]`. Trace the uninitialized-value error back to the missing init loop.
+   ```bash
+   valgrind --track-origins=yes ./stream_triad
+   # Note: ASan does not detect uninitialized reads; use Valgrind or
+   # Clang's MemorySanitizer (-fsanitize=memory) for this case.
+   ```
+
+4. **Hotspot.** Confirm that the triad loop dominates execution time.
+   ```bash
+   # With Valgrind callgrind:
+   valgrind --tool=callgrind --callgrind-out-file=callgrind.out ./stream_triad
+   callgrind_annotate callgrind.out
+
+   # With gprof (no Valgrind needed):
+   gcc -g -O1 -pg stream_triad.c timer.c -o stream_triad_pg
+   ./stream_triad_pg
+   gprof stream_triad_pg gmon.out | head -30
+   ```
+
+5. **(Threads)** Build an OpenMP example ([Module 3](03-openmp.md)) and check for data races. Identify which reports come from the runtime (noise) versus your code.
+   ```bash
+   # With Valgrind helgrind:
+   valgrind --tool=helgrind ./your_omp_program
+
+   # With ThreadSanitizer (much faster, no Valgrind needed):
+   gcc -g -O1 -fsanitize=thread -fopenmp your_omp_program.c -o prog_tsan
+   ./prog_tsan
+   ```
 
 ---
 
@@ -208,16 +278,17 @@ ms_print massif.out.<pid>
     real bug. Either way, never silently suppress a warning without understanding
     whether your code is in the call path.
 
-    **Question 4**: Reach for **helgrind** (or DRD — Data Race Detector). A
-    wrong-answer bug that appears only with multiple threads is almost certainly
-    a **data race**: two threads read and write the same memory location without
-    proper synchronization, producing a result that depends on scheduling order.
-    memcheck detects memory errors — reads from uninitialized memory, out-of-bounds
-    accesses, invalid frees. A race that writes the correct type to the correct
-    address is invisible to memcheck; the write is well-typed and in-bounds. helgrind
-    specifically tracks lock-acquisition history and detects when two threads
-    access the same location concurrently without a consistent lock order or
-    happens-before relationship.
+    **Question 4**: Reach for **helgrind** (or DRD), or for **ThreadSanitizer**
+    (`-fsanitize=thread`) if Valgrind is not available. A wrong-answer bug that
+    appears only with multiple threads is almost certainly a **data race**: two
+    threads read and write the same memory location without proper synchronization,
+    producing a result that depends on scheduling order. memcheck detects memory
+    errors — reads from uninitialized memory, out-of-bounds accesses, invalid frees.
+    A race that writes the correct type to the correct address is invisible to
+    memcheck; the write is well-typed and in-bounds. helgrind and TSan both track
+    concurrent accesses and flag when two threads reach the same location without a
+    happens-before relationship between them. TSan is typically faster (5–15×
+    overhead vs. 50–100× for helgrind) and produces cleaner output for OpenMP code.
 
 ---
 
@@ -228,7 +299,7 @@ ms_print massif.out.<pid>
 - [Valgrind manual](https://valgrind.org/docs/manual/) — top-level documentation.
 - [KCachegrind](https://kcachegrind.github.io/) — interactive viewer for callgrind output.
 
-### Tool manuals
+### Valgrind tool manuals
 
 - [Memcheck](https://valgrind.org/docs/manual/mc-manual.html) — memory errors and leaks.
 - [Helgrind](https://valgrind.org/docs/manual/hg-manual.html) — data races and locking errors.
@@ -236,3 +307,10 @@ ms_print massif.out.<pid>
 - [Cachegrind](https://valgrind.org/docs/manual/cg-manual.html) — cache and branch-prediction simulation.
 - [Callgrind](https://valgrind.org/docs/manual/cl-manual.html) — call-graph and instruction profiling.
 - [Massif](https://valgrind.org/docs/manual/ms-manual.html) — heap profiler.
+
+### Compiler sanitizers (alternatives)
+
+- [AddressSanitizer](https://clang.llvm.org/docs/AddressSanitizer.html) — Clang/LLVM documentation; same flags work with GCC.
+- [MemorySanitizer](https://clang.llvm.org/docs/MemorySanitizer.html) — uninitialized-read detection (Clang only).
+- [ThreadSanitizer](https://clang.llvm.org/docs/ThreadSanitizer.html) — data-race detection; works with GCC and Clang.
+- [UndefinedBehaviorSanitizer](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html) — catches integer overflow, null dereference, and other UB.

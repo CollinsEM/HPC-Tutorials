@@ -5,8 +5,8 @@
 By the end of this module you will be able to:
 
 - Apply the "measure, don't guess" discipline and target the bottleneck that matters
-- Inspect a machine's topology and bind threads with LIKWID
-- Measure achieved memory bandwidth and cache behavior with hardware counters
+- Inspect a machine's topology and bind threads to specific cores
+- Measure achieved memory bandwidth and cache behavior with hardware counters or timing
 - Find hotspots, cache misses, and memory errors with Valgrind
 - Place a kernel on the roofline model and decide whether it is compute- or bandwidth-bound
 
@@ -27,13 +27,39 @@ A disciplined workflow:
 This module covers two complementary tools — [**LIKWID**](https://github.com/RRZE-HPC/likwid/wiki) for hardware-counter and bandwidth analysis, **Valgrind** for hotspots, cache simulation, and memory correctness — and the **roofline model** that ties their numbers to a decision.
 
 !!! note "Tools used here"
-    Valgrind and KCachegrind build and run without special privileges. LIKWID's hardware-counter access needs a one-time privileged setup (a permissive `perf_event_paranoid` or its setuid access daemon) that an administrator configures once — on HPC clusters this is usually already provided (`module load likwid`). Where counters are unavailable, you can still get achieved bandwidth from the runtime the benchmark prints (see [Module 2](02-autovec.md)). The examples below profile the auto-vectorization benchmark from [Module 2](02-autovec.md), `examples/autovec/stream_triad.c`, which already carries a LIKWID marker comment at the top.
+    Neither LIKWID nor Valgrind is guaranteed to be installed; check before
+    starting the assignment. The examples below profile `examples/autovec/stream_triad.c`
+    from [Module 2](02-autovec.md).
+
+    | Tool | Availability | Purpose |
+    |------|-------------|---------|
+    | LIKWID | HPC clusters via `module load likwid`; self-install on workstations | Hardware bandwidth/FLOP counters, topology, thread pinning |
+    | `perf` | Ships with the Linux kernel on most distros | Hardware counters without LIKWID; needs `perf_event_paranoid ≤ 1` |
+    | `lscpu` / `numactl` | Standard on nearly all Linux systems | Topology inspection |
+    | `taskset` / `numactl` | Standard on nearly all Linux systems | Thread pinning |
+    | Valgrind | Common on workstations; less common on clusters | Simulated cache analysis, hotspot profiling, memory correctness |
+    | Timing calculation | Always available | Bandwidth from reported runtime (see [Module 2](02-autovec.md)) |
+
+    Where hardware counters are unavailable, the timing-based bandwidth calculation is a reliable substitute for the triad.
 
 ---
 
 ## LIKWID — "Like I Knew What I'm Doing"
 
 LIKWID is a lightweight command-line toolkit for performance measurement on CPUs. The pieces you will use most:
+
+!!! note "If LIKWID is not installed"
+    Each LIKWID capability has a widely-available substitute:
+
+    | LIKWID command | Alternative |
+    |----------------|------------|
+    | `likwid-topology -g` | `lscpu` (cache sizes, cores, NUMA); `numactl --hardware` (NUMA distances) |
+    | `likwid-perfctr -g MEM1` | Timing-based bandwidth (see [Module 2](02-autovec.md)); or `perf stat -e LLC-loads,LLC-load-misses ./program` |
+    | `likwid-perfctr -g FLOPS_DP` | Theoretical calculation from source; or `perf stat -e fp_arith_inst_retired.scalar_double ./program` (Intel) |
+    | `likwid-pin -c 0-7` | `taskset -c 0-7 ./program`; or `OMP_PLACES=cores OMP_PROC_BIND=close` for OpenMP |
+    | Marker API (region measurement) | Wrap the region in your own `clock_gettime` calls |
+
+    `perf` is part of the Linux kernel tools (`linux-tools-$(uname -r)` on Debian/Ubuntu) and is almost always available without administrator action once the `perf_event_paranoid` sysctl is set to 1 or lower (`cat /proc/sys/kernel/perf_event_paranoid`). On a cluster where you cannot change that setting, the timing-based approach requires no privileges at all.
 
 ### Inspect the machine: `likwid-topology`
 
@@ -135,13 +161,24 @@ Tools like **Intel Advisor** generate a roofline automatically by measuring FLOP
 
 Profile the Stream Triad from [Module 2](02-autovec.md) and locate it on the roofline.
 
-1. **Topology.** Run `likwid-topology -g`. Record your L1/L2/L3 sizes and physical core count. Is `STREAM_ARRAY_SIZE` (800000 doubles ≈ 6.4 MB) larger than your last-level cache? What does that imply about where the data lives?
-
-2. **Bandwidth.** Build the benchmark and run:
+1. **Topology.** Record your L1/L2/L3 sizes and physical core count. Is `STREAM_ARRAY_SIZE` (800000 doubles ≈ 6.4 MB) larger than your last-level cache? What does that imply about where the data lives?
    ```bash
-   likwid-perfctr -C 0 -g MEM1 ./stream_triad
+   lscpu                    # always available
+   likwid-topology -g       # richer view (if LIKWID is installed)
+   numactl --hardware       # NUMA distances (if numactl is installed)
    ```
-   Record the achieved bandwidth. Compute the triad's bandwidth by hand — $3 \times 800000 \times 8$ bytes per iteration divided by the per-iteration time — and compare.
+
+2. **Bandwidth.** Build the benchmark and measure achieved bandwidth. Compute the bandwidth from the printed runtime — $3 \times 800000 \times 8$ bytes per iteration divided by the per-iteration time in seconds. If LIKWID is available, cross-check with hardware counters:
+   ```bash
+   # Timing-based (always available — compute from the printed runtime)
+   ./stream_triad
+
+   # Hardware counters via LIKWID (if installed):
+   likwid-perfctr -C 0 -g MEM1 ./stream_triad
+
+   # Hardware counters via perf (if perf_event_paranoid ≤ 1):
+   perf stat -e LLC-loads,LLC-load-misses,cache-misses taskset -c 0 ./stream_triad
+   ```
 
 3. **Vectorization effect.** Rebuild with the GCC vectorization flags enabled (from Module 2) and re-measure. Did achieved bandwidth move toward peak?
 
@@ -184,12 +221,13 @@ Profile the Stream Triad from [Module 2](02-autovec.md) and locate it on the roo
     improved fraction and $k$ is the speedup factor within it.
 
     **Question 2**: At 85% of peak bandwidth there is only 15% headroom left on
-    a single core. The next step is to run LIKWID's `MEM` group with increasing
-    thread counts and find the thread count at which bandwidth saturates. If even
-    4 threads saturate the memory controller, adding cores helps only while you are
-    below that saturation point — beyond it, you have reached the hardware ceiling
-    and multithreading adds no more throughput. If bandwidth is still climbing with
-    thread count, more threads are the right lever.
+    a single core. The next step is to measure bandwidth with increasing thread counts
+    and find the point at which it saturates. With LIKWID: `likwid-perfctr -C 0-7 -g MEM1 ./vecadd`.
+    Without LIKWID: set `OMP_NUM_THREADS=N` and compute bandwidth from the printed
+    runtime at each $N$. If even 4 threads saturate the memory controller, adding
+    cores helps only while you are below that saturation point — beyond it, you have
+    reached the hardware ceiling and multithreading adds no more throughput. If
+    bandwidth is still climbing with thread count, more threads are the right lever.
 
     **Question 3**: Both observations can be simultaneously true because the
     hardware prefetcher hides L1 miss latency for regular (stride-1 or stride-$k$)
@@ -216,6 +254,7 @@ Profile the Stream Triad from [Module 2](02-autovec.md) and locate it on the roo
 ### Reference materials
 
 - [LIKWID](https://github.com/RRZE-HPC/likwid/wiki) — hardware-counter, topology, and thread-affinity tools.
+- [perf wiki](https://perf.wiki.kernel.org/) — Linux kernel performance counters (`perf` command); covers `perf stat`, `perf record`, and `perf report`.
 - [Roofline model](https://doi.org/10.1145/1498765.1498785) — Williams, Waterman & Patterson, *Communications of the ACM*, 2009.
 
 For memory and threading correctness see [Module 10](10-valgrind.md) (Valgrind); for GPU kernel profiling see [Module 11](11-nsight.md) (Nsight).

@@ -7,7 +7,7 @@ By the end of this module you will be able to:
 - Explain SIMD vectorization and why it matters for single-core performance
 - Identify vectorization methods in ascending order of programmer effort
 - Enable and verify compiler auto-vectorization using flags and diagnostic reports
-- Measure memory bandwidth using LIKWID performance counters
+- Measure memory bandwidth from timing output or hardware performance counters
 - Interpret the roofline model and locate the Stream Triad on it
 
 ---
@@ -205,9 +205,12 @@ Several details are worth noting:
 
 1. **Baseline**: Build and run the unmodified code. Record the average runtime.
 
-2. **Topology inspection**: Run `likwid-topology` to inspect your system's cache
-   hierarchy and core layout. Note the L1/L2/L3 sizes and the number of memory
-   channels.
+2. **Topology inspection**: Inspect your system's cache hierarchy and core layout.
+   Note the L1/L2/L3 sizes and the number of physical cores.
+   ```bash
+   lscpu                    # cache sizes, core count, NUMA layout (always available)
+   likwid-topology -g       # richer graphical view (if LIKWID is installed)
+   ```
 
 3. **Bandwidth measurement**: Run with LIKWID memory performance counters to
    observe the actual DRAM bandwidth during the Triad:
@@ -229,8 +232,9 @@ Several details are worth noting:
    and measure again.
 
 6. **Tabulate results**: For each build (baseline, vectorized, AVX-512
-   preferred), record: average runtime, vectorization report output, LIKWID
-   MEM1 bandwidth, and bandwidth as a fraction of theoretical peak.
+   preferred), record: average runtime, vectorization report output, achieved
+   bandwidth computed from the runtime (and LIKWID MEM1 bandwidth if available),
+   and bandwidth as a fraction of theoretical peak.
 
 ### Build and Run
 
