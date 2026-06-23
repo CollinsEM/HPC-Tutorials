@@ -4,6 +4,9 @@ site/site/
 # Reference material not for distribution
 *.pdf
 
+# Local validation reports (tracked on local/tycho-validation branch only)
+EXAMPLES-VALIDATION-*.md
+
 # CMake build directories
 build/
 */build/
