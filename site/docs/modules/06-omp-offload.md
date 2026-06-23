@@ -143,17 +143,21 @@ GPU offload requires both an OpenMP-capable compiler *and* an offload backend fo
 **Task 1 — Build and run.** Build the example and confirm it reports a device. Note the runtime.
 
 === "Workstation"
+    The NVIDIA HPC SDK (`nvc++`) is the most reliable path on NVIDIA hardware.
+    If you have it available (e.g. via `module load nvhpc`):
     ```bash
     cd examples/OMP_Offload/Example1
     mkdir build && cd build
-    cmake ..
+    CXX=nvc++ cmake ..
     make
     ./stream_triad
     ```
-    If `cmake` does not pick up offload flags, build directly:
+    With GCC, offload to NVIDIA requires the `gcc-offload-nvptx` plugin
+    (often a separate package). If it is installed:
     ```bash
     g++ -fopenmp -foffload=nvptx-none -O3 stream_triad.cpp timer.cpp -o stream_triad
     ```
+    If the binary reports zero devices, the plugin is missing or not configured.
 
 === "SLURM cluster"
     See `examples/OMP_Offload/Example1/run.slurm`. It requests one GPU with `--gres=gpu:1` and loads a compiler module with offload support. Adjust the module name for your cluster.
